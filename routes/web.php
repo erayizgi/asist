@@ -10,9 +10,9 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/users', "UserController@create");
 
 Route::prefix('users')->group(function(){
     Route::patch("/","UserController@patch")->middleware('auth:api');
+    Route::get("/","UserController@getUsers");
 
 });

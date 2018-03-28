@@ -6,7 +6,8 @@ use App\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use App\Libraries\TReq;
+use App\Libraries\Res;
 class UserController extends Controller
 {
     //
@@ -15,6 +16,32 @@ class UserController extends Controller
         return $request->user();
     }
 
+    public function getUsers(Request $request)
+    {
+        try{
+            $query = TReq::multiple($request, User::class);
+            $data = $query['query']->get();
+            $result = [
+                'metadata'=>[
+                    'count'=>$data->count(),
+                    'offset'=>$query['offset'],
+                    'limit'=>$query['limit'],
+                ],
+                'data'=>$data
+            ];
+
+            return Res::success(200,'Users',$result);
+        }catch (Exception $e){
+            $error = new \stdClass();
+            $error->errors = [
+                'exception'=>[
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500,$message,$error);
+        }
+    }
     public function patch(Request $request)
     {
         try{
