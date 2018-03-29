@@ -29,3 +29,7 @@ Route::prefix("streams")->group(function(){
     Route::get("/{slug}", "StreamController@getStream");
     Route::post("/chat", "StreamController@sendMessage")->middleware("auth:api");
 });
+
+Route::prefix("posts")->group(function(){
+    Route::post("/", "PostsController@posts")->middleware("auth:api");
+});

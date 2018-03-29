@@ -9,4 +9,6 @@ class Stream extends Model
     protected $primaryKey = "ID";
     protected $table = "tb_yayinlar";
 
+
+
 }
