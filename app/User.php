@@ -28,4 +28,5 @@ class User extends Authenticatable
     protected $hidden = [
         'kullaniciParola', 'remember_token',
     ];
+
 }
