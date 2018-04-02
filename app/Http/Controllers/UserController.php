@@ -12,6 +12,33 @@ class UserController extends Controller
 {
     //
 
+    public function me(Request $request)
+    {
+        try{
+            $query = TReq::multiple($request, User::class);
+            $data = $query['query']->find($request->user()->ID);
+            $result = [
+                'metadata'=>[
+                    'count'=>$data->count(),
+                    'offset'=>$query['offset'],
+                    'limit'=>$query['limit'],
+                ],
+                'data'=>$data
+            ];
+
+            return Res::success(200,'Users',$result);
+        }catch (Exception $e){
+            $error = new \stdClass();
+            $error->errors = [
+                'exception'=>[
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500,$message,$error);
+        }
+    }
+
 
     public function getUsers(Request $request)
     {
