@@ -12,7 +12,7 @@
 */
 
 Route::prefix('users')->group(function(){
-    Route::get("/","UserController@getUsers");
+    Route::get("/","UserController@getUsers")->middleware('auth:api');
     Route::get("/search/{username}", "UserController@searchUser");
     Route::get("/{username}","UserController@getUser");
     Route::patch("/","UserController@patch")->middleware('auth:api');
