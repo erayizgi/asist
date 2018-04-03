@@ -19,7 +19,7 @@ class UserController extends Controller
             $data = $query['query']->find($request->user()->ID);
             $result = [
                 'metadata'=>[
-                    'count'=>$data->count(),
+                    'count'=>1,
                     'offset'=>$query['offset'],
                     'limit'=>$query['limit'],
                 ],
