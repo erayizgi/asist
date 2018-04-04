@@ -171,7 +171,7 @@ class UserController extends Controller
                 throw new Exception($validator->errors(), 400);
             }
 
-            if(User::find($request->user()->ID)->update($request->all())){
+            if(User::find($request->user()->ID)->update($request->only(['adSoyad','kullaniciHakkinda','kullaniciDogumTarihi','kullaniciBulunduguUlke','kullaniciBulunduguSehir']))){
                 return Res::success(200,'Users', User::find($request->user()->ID));
             }else {
                 throw new Exception('user is not successfully created', 400);
@@ -180,12 +180,10 @@ class UserController extends Controller
         }catch (Exception $e){
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
+                'exception'=>json_decode($e->getMessage())
             ];
             $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+            return Res::fail($e->getCode(),$message,$error);
         }
 
         /*

@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use  HasApiTokens,Notifiable;
+    use  HasApiTokens, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -16,7 +16,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'IMG',"coverIMG","adSoyad","kullaniciAdi", 'email', 'password',
+        'IMG', "coverIMG", "adSoyad", "kullaniciAdi", 'email', 'password', 'kullaniciBulunduguSehir',
+        'kullaniciBulunduguUlke', 'kullaniciDogumTarihi', 'kullaniciHakkinda',
+
     ];
     protected $primaryKey = "ID";
     /**
@@ -26,7 +28,7 @@ class User extends Authenticatable
      */
     protected $table = "tb_kullanicilar";
     protected $hidden = [
-        'password', 'remember_token', 'betnano_pass','betnano_uname','adminyetki'
+        'password', 'remember_token', 'betnano_pass', 'betnano_uname', 'adminyetki'
     ];
 
 }
