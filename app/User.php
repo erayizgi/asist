@@ -26,7 +26,7 @@ class User extends Authenticatable
      */
     protected $table = "tb_kullanicilar";
     protected $hidden = [
-        'kullaniciParola', 'remember_token',
+        'password', 'remember_token', 'betnano_pass','betnano_uname','adminyetki'
     ];
 
 }
