@@ -31,6 +31,15 @@ Route::prefix("streams")->group(function(){
     Route::post("/chat", "StreamController@sendMessage")->middleware("auth:api");
 });
 
+Route::prefix("message")->group(function(){
+    Route::get("/inbox", "ConversationController@inbox")->middleware("auth:api");
+    Route::get("/outbox", "ConversationController@outbox")->middleware("auth:api");
+    Route::get("/read/{id}", "ConversationController@read")->middleware("auth:api");
+    Route::post("/create", "ConversationController@create")->middleware("auth:api");
+    Route::post("/reply", "ConversationController@reply")->middleware("auth:api");
+    Route::delete("/delete", "ConversationController@delete")->middleware("auth:api");
+});
+
 Route::prefix("posts")->group(function(){
     Route::post("/", "PostsController@posts")->middleware("auth:api");
 });
