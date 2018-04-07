@@ -108,7 +108,7 @@ class UserController extends Controller
             $data = $query['query']->where('kullaniciAdi', $username)->first();
             $result = [
                 'metadata' => [
-                    'count' => $data->count(),
+                    //'count' => $data->count(),
                     'offset' => $query['offset'],
                     'limit' => $query['limit'],
                 ],

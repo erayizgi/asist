@@ -22,7 +22,7 @@ class TReq
         // Get select fileds
         $_sl = $request->has('fields') ? $request->fields : false;
         // if query order by
-        $_ob = $request->has('order_by ') ? $request->order_by : false;
+        $_ob = $request->has('order_by') ? $request->order_by : false;
         // If with trashed data requested.
         $_ar = $request->has('archived') ? $request->archived : false;
         // If only trashed data requested.
@@ -40,9 +40,7 @@ class TReq
             foreach ($arr as $key => $field) {
                 $type = $field[0] == '-' ? 'desc' : 'asc';
                 $field = $field[0] == '-' ? substr($field, 1) : $field;
-                if (in_array($field, $model::selectable())) {
-                    $query->orderBy($field, $type);
-                }
+                $query->orderBy($field, $type);
             }
         }
         // if select condition
@@ -51,9 +49,7 @@ class TReq
             $arr = explode(',', $_sl);
             //iterate
             foreach ($arr as $key => $field) {
-                if (!in_array($field, $model::selectable())) {
-                    unset($arr[$key]);
-                }
+                unset($arr[$key]);
             }
             // COUNT ARRAY, IF THERE IS NO ACCEPTABLE SELECT, SELECT *, ELSE SELECT ARRAY
             $query->select($arr);

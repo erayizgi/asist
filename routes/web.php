@@ -46,4 +46,7 @@ Route::prefix("message")->group(function(){
 
 Route::prefix("posts")->group(function(){
     Route::post("/", "PostsController@posts")->middleware("auth:api");
+    Route::get("/feed", "PostsController@myFeed")->middleware("auth:api");
+    Route::get("/couponDetail/{coupon_id}","PostsController@couponGames")->middleware("auth:api");
+    Route::get("/couponStatus/{coupon_id}","PostsController@couponStatus");
 });

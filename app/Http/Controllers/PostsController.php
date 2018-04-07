@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Coupon;
+use App\Follow;
+use App\Games;
 use App\Posts;
 use Exception;
 use Illuminate\Http\Request;
@@ -12,33 +15,143 @@ use App\Libraries\Res;
 class PostsController extends Controller
 {
     //
-    public function posts(Request $request){
-        try{
+    public function posts(Request $request)
+    {
+        try {
             $validator = Validator::make($request->all(), [
                 'paylasim_tipi' => 'required|filled',
-                'durum'         => 'required|filled',
+                'durum' => 'required|filled',
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 throw new Exception($validator->errors(), 400);
             }
 
-            Posts::create([
+            $post = Posts::create([
                 'paylasim_tipi' => $request->paylasim_tipi,
-                'durum'         => $request->durum,
-                'kullanici_id'  => $request->user()->ID
+                'durum' => $request->durum,
+                'kullanici_id' => $request->user()->ID,
+                'resim' => $request->resim,
+                'paylasilan_gonderi' => $request->paylasilan_gonderi
             ]);
-            return Res::success(200,'Posts', 'new post has been created successfully');
+            /*
+             * TODO burası güncellenecek ve post atıldığında otomatik bildirimler oluşacak
+            $followers = DB::table("tb_takip")->where("takipEdilenID",$request->user()->ID)->where("kayitDurumu",1)->get();
+            $bildirimler = [];
+            $tip = "durum";
+            foreach($followers as $f){
+                array_push($bildirimler,[
+                    "alici_id"=>$f->takipEdenID,
+                    "bildirim_tipi" => $tip,
+                    "bildirim_url" =>
+                ]);
+            }
+            */
+            return Res::success(200, 'Durum paylaşıldı', $post);
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>[
+                'exception' => [
                     $e->getMessage()
                 ]
             ];
             $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+            return Res::fail(500, $message, $error);
+        }
+    }
+
+    public function myFeed(Request $request)
+    {
+        try {
+            $query = TReq::multiple($request, Follow::class);
+            $user_id = $request->user()->ID;
+            /*
+             * select * from tb_takip
+             * INNER JOIN tb_paylasimlar ON tb_paylasimlar.kullanici_id = tb_takip.takipEdilenID
+             * WHERE tb_takip.takipEdenID = 25
+             */
+            $data = $query['query']->join("tb_paylasimlar", "tb_paylasimlar.kullanici_id", "tb_takip.takipEdilenID")
+                ->select(
+                    'tb_paylasimlar.created_at AS post_created_at',
+                    'tb_paylasimlar.paylasim_id AS post_id',
+                    'tb_paylasimlar.*',
+                    'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
+                ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasimlar.kullanici_id")
+                ->where("tb_takip.takipEdenID", "=", $user_id);
+            //return $data->toSql();
+            $data = $data->get();
+            foreach ($data as $k => $v) {
+                $data[$k]->post_id = encrypt($v->post_id);
+            }
+            $result = [
+                'metadata' => [
+                    'count' => $data->count(),
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
+            ];
+
+            return Res::success(200, 'Feed', $result);
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail($e->getCode(), $e->getMessage(), $error);
+        }
+
+    }
+
+    public function couponGames(Request $request, $coupon_id)
+    {
+        try{
+            $games = Games::where("kupon_id",$coupon_id)->get();
+            $result = [
+                'metadata' => [
+                    'count' => $games->count()
+                ],
+                'data' => $games
+            ];
+            return Res::success(200, 'Games', $result);
+
+        }catch (Exception $e){
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail($e->getCode(), $e->getMessage(), $error);
+        }
+    }
+
+    public function couponStatus($coupon_id)
+    {
+        try{
+            $games = Coupon::where("kupon_id",$coupon_id)->first();
+            $result = [
+                'metadata' => [
+                    'count' => 1
+                ],
+                'data' => $games
+            ];
+            return Res::success(200, 'Coupon', $result);
+
+        }catch (Exception $e){
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail($e->getCode(), $e->getMessage(), $error);
         }
     }
 }
