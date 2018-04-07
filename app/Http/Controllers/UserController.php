@@ -8,182 +8,182 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\TReq;
 use App\Libraries\Res;
+
 class UserController extends Controller
 {
     //
 
     public function me(Request $request)
     {
-        try{
+        try {
             $query = TReq::multiple($request, User::class);
             $data = $query['query']->find($request->user()->ID);
             $result = [
-                'metadata'=>[
-                    'count'=>1,
-                    'offset'=>$query['offset'],
-                    'limit'=>$query['limit'],
+                'metadata' => [
+                    'count' => 1,
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
                 ],
-                'data'=>$data
+                'data' => $data
             ];
 
-            return Res::success(200,'Users',$result);
-        }catch (Exception $e){
+            return Res::success(200, 'Users', $result);
+        } catch (Exception $e) {
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>[
+                'exception' => [
                     $e->getMessage()
                 ]
             ];
             $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+            return Res::fail(500, $message, $error);
         }
     }
 
 
     public function getUsers(Request $request)
     {
-        try{
+        try {
             $query = TReq::multiple($request, User::class);
             $data = $query['query']->get();
             $result = [
-                'metadata'=>[
-                    'count'=>$data->count(),
-                    'offset'=>$query['offset'],
-                    'limit'=>$query['limit'],
+                'metadata' => [
+                    'count' => $data->count(),
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
                 ],
-                'data'=>$data
+                'data' => $data
             ];
 
-            return Res::success(200,'Users',$result);
-        }catch (Exception $e){
+            return Res::success(200, 'Users', $result);
+        } catch (Exception $e) {
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>[
+                'exception' => [
                     $e->getMessage()
                 ]
             ];
             $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+            return Res::fail(500, $message, $error);
         }
     }
 
     public function getUser(Request $request, $username)
     {
-        try{
+        try {
             $query = TReq::multiple($request, User::class);
             $data = $query['query']->where('kullaniciAdi', $username)->first();
             $result = [
-                'metadata'=>[
-                    'count'=>$data->count(),
-                    'offset'=>$query['offset'],
-                    'limit'=>$query['limit'],
+                'metadata' => [
+                    'count' => $data->count(),
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
                 ],
-                'data'=>$data
+                'data' => $data
             ];
 
-            return Res::success(200,'Users',$result);
-        }catch (Exception $e){
+            return Res::success(200, 'Users', $result);
+        } catch (Exception $e) {
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>[
+                'exception' => [
                     $e->getMessage()
                 ]
             ];
             $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+            return Res::fail(500, $message, $error);
         }
     }
 
     public function searchUser(Request $request, $username)
     {
-        try{
+        try {
             $query = TReq::multiple($request, User::class);
             $data = $query['query']->where('kullaniciAdi', $username)->first();
             $result = [
-                'metadata'=>[
-                    'count'=>$data->count(),
-                    'offset'=>$query['offset'],
-                    'limit'=>$query['limit'],
+                'metadata' => [
+                    'count' => $data->count(),
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
                 ],
-                'data'=>$data
+                'data' => $data
             ];
 
-            return Res::success(200,'Users',$result);
-        }catch (Exception $e){
+            return Res::success(200, 'Users', $result);
+        } catch (Exception $e) {
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>[
+                'exception' => [
                     $e->getMessage()
                 ]
             ];
             $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+            return Res::fail(500, $message, $error);
         }
     }
 
     public function post(Request $request)
     {
-        try{
+        try {
             $validator = Validator::make($request->all(), [
-                'kullaniciAdi'     => 'required|filled',
-                'password'         => 'required|filled|min:3',
-                'adSoyad'          => 'required|filled|min:3',
-                'email'            => 'required|filled|exists:tb_kullanicilar,email',
-                'kullaniciTelefon' => 'required|filled|exists:tb_kullanicilar,kullaniciTelefon',
-                'kullaniciHakkinda'=> 'required|filled|min:3',
+                'kullaniciAdi' => 'required|filled|unique:tb_kullanicilar,kullaniciAdi',
+                'password' => 'required|filled|min:3',
+                'adSoyad' => 'required|filled|min:3',
+                'email' => 'required|filled|unique:tb_kullanicilar,email',
+                'kullaniciTelefon' => 'required|filled|unique:tb_kullanicilar,kullaniciTelefon',
                 'kullaniciBulunduguUlke' => 'required|filled|min:3',
                 'kullaniciBulunduguSehir' => 'required|filled|min:3'
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 throw new Exception($validator->errors(), 400);
             }
-
-            if(User::create($request->all())){
-                return Res::success(200,'Users', 'user account has been created successfully');
-            }else {
+            $data = $request->only(['kullaniciAdi','password','adSoyad','email','kullaniciTelefon','kullaniciBulunduguUlke','kullaniciBulunduguSehir']);
+            $data["password"] = bcrypt($data["password"]);
+            if (User::create($data)) {
+                return Res::success(200, 'Users', 'user account has been created successfully');
+            } else {
                 throw new Exception('user is not successfully created', 400);
             }
-        }catch (Exception $e){
+        } catch (Exception $e) {
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
+                'exception' => json_decode($e->getMessage())
+
             ];
             $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+            return Res::fail($e->getCode(), $message, $error);
         }
     }
 
     public function patch(Request $request)
     {
-        try{
-            $validator = Validator::make($request->all(),[
-                'adSoyad'                 => 'required|filled|min:3',
-                'kullaniciHakkinda'       => 'required|filled|min:3',
-                'kullaniciDogumTarihi'    => 'required|filled|',
-                'kullaniciBulunduguUlke'  => 'required|filled|min:5',
+        try {
+            $validator = Validator::make($request->all(), [
+                'adSoyad' => 'required|filled|min:3',
+                'kullaniciHakkinda' => 'required|filled|min:3',
+                'kullaniciDogumTarihi' => 'required|filled|',
+                'kullaniciBulunduguUlke' => 'required|filled|min:5',
                 'kullaniciBulunduguSehir' => 'required|filled|min:5'
             ]);
 
-            if($validator->fails()){
+            if ($validator->fails()) {
                 throw new Exception($validator->errors(), 400);
             }
-
-            if(User::find($request->user()->ID)->update($request->only(['adSoyad','kullaniciHakkinda','kullaniciDogumTarihi','kullaniciBulunduguUlke','kullaniciBulunduguSehir']))){
-                return Res::success(200,'Users', User::find($request->user()->ID));
-            }else {
+            $data = $request->only(['adSoyad', 'kullaniciHakkinda', 'kullaniciDogumTarihi', 'kullaniciBulunduguUlke', 'kullaniciBulunduguSehir']);
+            $data["kullaniciDogumTarihi"] = date("Y-m-d",strtotime($data["kullaniciDogumTarihi"]));
+            if (User::find($request->user()->ID)->update($data)) {
+                return Res::success(200, 'Users', User::find($request->user()->ID));
+            } else {
                 throw new Exception('user is not successfully created', 400);
             }
-
-        }catch (Exception $e){
+        } catch (Exception $e) {
             $error = new \stdClass();
             $error->errors = [
-                'exception'=>json_decode($e->getMessage())
+                'exception' => json_decode($e->getMessage())
             ];
             $message = 'An error has occured!';
-            return Res::fail($e->getCode(),$message,$error);
+            return Res::fail($e->getCode(), $message, $error);
         }
 
         /*

@@ -17,7 +17,7 @@ Route::prefix('users')->group(function(){
     Route::get("/search/{username}", "UserController@searchUser");
     Route::get("/{username}","UserController@getUser");
     Route::patch("/","UserController@patch")->middleware('auth:api');
-    Route::post("/", "UserController@post")->middleware('auth:api');
+    Route::post("/", "UserController@post");
 });
 
 Route::prefix("news")->group(function(){
