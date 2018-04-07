@@ -116,7 +116,7 @@ class UserController extends Controller
                 'followers' => DB::table('tb_takip')->where('takipEdilenID', $data->ID)->count(),
                 'following' => DB::table('tb_takip')->where('takipEdenID', $data->ID)->count(),
                 'comments'  => DB::table('tb_paylasim_yorumlari')->where('kullanici_id', $data->ID)->count(),
-                'posts'     => DB::table('tb_paylasimlar')->where(['kullanici_id' => $data->ID, 'kayit_durumu' => 1])->count()
+                'posts'     => DB::table('tb_paylasimlar')->where(['kullanici_id' => $data->ID, 'kayit_durumu' => 1])->count(),
             ];
 
             return Res::success(200, 'Users', $result);
@@ -236,7 +236,9 @@ class UserController extends Controller
                 throw new Exception($validator->errors(), 400);
             }
 
-            if(User::find($request->user()->ID)->update($request->only('password'))){
+            $password = bcrypt($request->password);
+
+            if(User::find($request->user()->ID)->update(['password' => $password])){
                 return Res::success(200, 'Users', 'user account password has been updated successfully');
             } else {
                 throw new Exception('user is not successfully created', 400);
@@ -255,13 +257,29 @@ class UserController extends Controller
     public function forgot(Request $request)
     {
         try{
+            $validator = Validator::make($request->all(), [
+                'email' => 'required'
+            ]);
 
-            $gsm  = str_replace(['()', ')', '-'], '', $request->user()->kullaniciTelefon);
-            $text = "AsistAnaliz Kullanıcı Parolanız: ".$request->user()->password;
+            if($validator->fails()){
+                throw new Exception($validator->errors(), 400);
+            }
+
+            if(!$user = User::where('email', $request->email)->first()){
+                throw new Exception('error', 400);
+            }
+
+            $gsm  = str_replace(['()', ')', '-'], '', $user->kullaniciTelefon);
+            $pass = substr(md5(uniqid(mt_rand(), true)), 0, 8);
+            $text = "AsistAnaliz Kullanıcı Parolanız: ".$pass;
 
             $client = new Client();
 
             if(!$client->request('GET', "http://facetahmin.e-panelim.com/Gonder.aspx?Site=FT&Tur=SMS&Tel='+$gsm+'&Icerik=$text")){
+                throw new Exception('sms error', 400);
+            }
+
+            if(!User::find($user->ID)->update(['password' => bcrypt($pass)])){
                 throw new Exception('error', 400);
             }
 
