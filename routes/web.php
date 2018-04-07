@@ -19,6 +19,8 @@ Route::prefix('users')->group(function(){
     Route::get("/{username}","UserController@getUser");
     Route::patch("/","UserController@patch")->middleware('auth:api');
     Route::patch("/image","UserController@image")->middleware('auth:api');
+    Route::patch("/reset","UserController@reset")->middleware('auth:api');
+    Route::post("/forgot","UserController@forgot")->middleware('auth:api');
     Route::post("/", "UserController@post");
 });
 

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Libraries\TReq;
 use App\Libraries\Res;
 
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Client;
 class UserController extends Controller
 {
     //
@@ -110,7 +112,11 @@ class UserController extends Controller
                     'offset' => $query['offset'],
                     'limit' => $query['limit'],
                 ],
-                'data' => $data
+                'data' => $data,
+                'followers' => DB::table('tb_takip')->where('takipEdilenID', $data->ID)->count(),
+                'following' => DB::table('tb_takip')->where('takipEdenID', $data->ID)->count(),
+                'comments'  => DB::table('tb_paylasim_yorumlari')->where('kullanici_id', $data->ID)->count(),
+                'posts'     => DB::table('tb_paylasimlar')->where(['kullanici_id' => $data->ID, 'kayit_durumu' => 1])->count()
             ];
 
             return Res::success(200, 'Users', $result);
@@ -208,6 +214,59 @@ class UserController extends Controller
             } else {
                 throw new Exception('user is not successfully created', 400);
             }
+
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => json_decode($e->getMessage())
+            ];
+            $message = 'An error has occured!';
+            return Res::fail($e->getCode(), $message, $error);
+        }
+    }
+
+    public function reset(Request $request)
+    {
+        try{
+            $validator = Validator::make($request->all(), [
+                'password' => 'required|min:6'
+            ]);
+
+            if($validator->fails()){
+                throw new Exception($validator->errors(), 400);
+            }
+
+            if(User::find($request->user()->ID)->update($request->only('password'))){
+                return Res::success(200, 'Users', 'user account password has been updated successfully');
+            } else {
+                throw new Exception('user is not successfully created', 400);
+            }
+
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => json_decode($e->getMessage())
+            ];
+            $message = 'An error has occured!';
+            return Res::fail($e->getCode(), $message, $error);
+        }
+    }
+
+    public function forgot(Request $request)
+    {
+        try{
+
+            $gsm  = str_replace(['()', ')', '-'], '', $request->user()->kullaniciTelefon);
+            $text = "AsistAnaliz Kullanıcı Parolanız: ".$request->user()->password;
+
+            $client = new Client();
+
+            if(!$client->request('GET', "http://facetahmin.e-panelim.com/Gonder.aspx?Site=FT&Tur=SMS&Tel='+$gsm+'&Icerik=$text")){
+                throw new Exception('error', 400);
+            }
+
+            return Res::success(200, 'Users', 'sms ok');
+
 
         } catch (Exception $e) {
             $error = new \stdClass();
