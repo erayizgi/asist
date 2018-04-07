@@ -13,10 +13,12 @@
 
 Route::prefix('users')->group(function(){
     Route::get("/me","UserController@me")->middleware('auth:api');
+    Route::get("/me/statistics","UserController@statistics")->middleware('auth:api');
     Route::get("/","UserController@getUsers")->middleware('auth:api');
     Route::get("/search/{username}", "UserController@searchUser");
     Route::get("/{username}","UserController@getUser");
     Route::patch("/","UserController@patch")->middleware('auth:api');
+    Route::patch("/image","UserController@image")->middleware('auth:api');
     Route::post("/", "UserController@post");
 });
 

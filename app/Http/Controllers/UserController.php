@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use App\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -39,6 +40,36 @@ class UserController extends Controller
             return Res::fail(500, $message, $error);
         }
     }
+
+    public function statistics(Request $request)
+    {
+        try {
+            $query = TReq::multiple($request, User::class);
+                        $result = [
+                'metadata' => [
+                    'count' => 1,
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'followers' => DB::table('tb_takip')->where('takipEdilenID', $request->user()->ID)->count(),
+                'following' => DB::table('tb_takip')->where('takipEdenID', $request->user()->ID)->count(),
+                'comments'  => DB::table('tb_paylasim_yorumlari')->where('kullanici_id', $request->user()->ID)->count(),
+                'posts'     => DB::table('tb_paylasimlar')->where(['kullanici_id' => $request->user()->ID, 'kayit_durumu' => 1])->count()
+            ];
+
+            return Res::success(200, 'Users', $result);
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500, $message, $error);
+        }
+    }
+
 
 
     public function getUsers(Request $request)
@@ -150,6 +181,38 @@ class UserController extends Controller
             $error->errors = [
                 'exception' => json_decode($e->getMessage())
 
+            ];
+            $message = 'An error has occured!';
+            return Res::fail($e->getCode(), $message, $error);
+        }
+    }
+
+    public function image(Request $request)
+    {
+        try{
+            $validator = Validator::make($request->all(), [
+                'url'  => 'required',
+                'type' => 'required',
+            ]);
+
+            if($validator->fails()){
+                throw new Exception($validator->errors(), 400);
+            }
+
+            $image = [
+                ($request->type == 'avatar' ? 'IMG' : 'coverIMG') => $request->url,
+            ];
+
+            if(User::find($request->user()->ID)->update($image)){
+                return Res::success(200, 'Users', User::find($request->user()->ID));
+            } else {
+                throw new Exception('user is not successfully created', 400);
+            }
+
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => json_decode($e->getMessage())
             ];
             $message = 'An error has occured!';
             return Res::fail($e->getCode(), $message, $error);
