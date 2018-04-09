@@ -93,11 +93,22 @@ class ConversationController extends Controller
             ]);
 
 
-            if(Message::create(['conversation_id' => $conversation_id->conversation_id, 'user_id' => $request->user()->ID, 'content' => $request->message])) {
-                return Res::success(200,'pm', 'success');
-            }else {
-                throw new Exception('user is not successfully created', 400);
+            if(!Message::create(['conversation_id' => $conversation_id->conversation_id, 'user_id' => $request->user()->ID, 'content' => $request->message])) {
+                throw new Exception('conversation error', 400);
             }
+
+            $notification = [
+                "alici_id"      => $request->receiver_id,
+                "bildirim_tipi" => 'pm',
+                "bildirim_url"  => "pm_url",
+                "olusturan_id"  => $request->user()->ID
+            ];
+
+            if(!Notifications::insert($notification)){
+                throw new Exception('notification errors', 400);
+            }
+
+            return Res::success(200,'pm', 'success');
 
         }catch (Exception $e){
             $error = new \stdClass();

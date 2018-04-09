@@ -50,3 +50,17 @@ Route::prefix("posts")->group(function(){
     Route::get("/couponDetail/{coupon_id}","PostsController@couponGames")->middleware("auth:api");
     Route::get("/couponStatus/{coupon_id}","PostsController@couponStatus");
 });
+
+Route::prefix("comments")->group(function(){
+    Route::post("/", "CommentsController@create")->middleware("auth:api");
+    Route::patch("/", "CommentsController@update")->middleware("auth:api");
+    Route::delete("/", "CommentsController@delete")->middleware("auth:api");
+});
+
+Route::prefix("notifications")->group(function(){
+    Route::get("/", "NotificationsController@notifications")->middleware("auth:api");
+    Route::patch("/read", "NotificationsController@read")->middleware("auth:api");
+});
+
+Route::post("/follow", "FollowController@follow")->middleware("auth:api");
+Route::post("/unfollow", "FollowController@unfollow")->middleware("auth:api");

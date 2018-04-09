@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use App\Coupon;
 use App\Follow;
 use App\Games;
 use App\Posts;
 use Exception;
 use Illuminate\Http\Request;
+use App\Notifications;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\TReq;
 use App\Libraries\Res;
@@ -34,19 +36,25 @@ class PostsController extends Controller
                 'resim' => $request->resim,
                 'paylasilan_gonderi' => $request->paylasilan_gonderi
             ]);
-            /*
-             * TODO burası güncellenecek ve post atıldığında otomatik bildirimler oluşacak
+
+
             $followers = DB::table("tb_takip")->where("takipEdilenID",$request->user()->ID)->where("kayitDurumu",1)->get();
             $bildirimler = [];
             $tip = "durum";
+
             foreach($followers as $f){
                 array_push($bildirimler,[
-                    "alici_id"=>$f->takipEdenID,
+                    "alici_id"      =>$f->takipEdenID,
                     "bildirim_tipi" => $tip,
-                    "bildirim_url" =>
+                    "bildirim_url"  => "notify_url",
+                    "olusturan_id"  => $request->user()->ID
                 ]);
             }
-            */
+
+            if(!Notifications::insert($bildirimler)){
+                throw new Exception('notification errors', 400);
+            }
+
             return Res::success(200, 'Durum paylaşıldı', $post);
 
         } catch (Exception $e) {
