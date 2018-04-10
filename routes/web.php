@@ -55,9 +55,11 @@ Route::prefix("posts")->group(function(){
     Route::post("/", "PostsController@posts")->middleware("auth:api");
     Route::get("{post_id}","PostsController@post");
     Route::get("/comment/{comment_id}","PostsController@getByComment");
-    Route::get("/feed", "PostsController@myFeed")->middleware("auth:api");
+    Route::get("/feed/{username}","PostsController@getFeedOfUser");
+    //Route::get("/feed", "PostsController@myFeed")->middleware("auth:api");
     Route::get("/couponDetail/{coupon_id}","PostsController@couponGames")->middleware("auth:api");
     Route::get("/couponStatus/{coupon_id}","PostsController@couponStatus");
+
 });
 
 Route::prefix("comments")->group(function(){

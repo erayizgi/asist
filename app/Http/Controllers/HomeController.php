@@ -85,7 +85,7 @@ class HomeController extends Controller
                 ]
             ];
             $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $e->getMessage(), $error);
+            return Res::fail(500, $e->getMessage(), $error);
         }
     }
 

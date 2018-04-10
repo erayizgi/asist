@@ -72,8 +72,6 @@ class UserController extends Controller
         }
     }
 
-
-
     public function getUsers(Request $request)
     {
         try {
