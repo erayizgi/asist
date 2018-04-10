@@ -11,6 +11,11 @@
 |
 */
 
+Route::prefix("home")->group(function(){
+    Route::get("/posts", "HomeController@posts");
+    Route::get("/coupons", "HomeController@coupons");
+});
+
 Route::prefix('users')->group(function(){
     Route::get("/me","UserController@me")->middleware('auth:api');
     Route::get("/me/statistics","UserController@statistics")->middleware('auth:api');
@@ -27,6 +32,7 @@ Route::prefix('users')->group(function(){
 
 Route::prefix("news")->group(function(){
     Route::get("/", "NewsController@getNews");
+    Route::get("/side", "NewsController@sideNews");
     Route::get("/{slug}", "NewsController@getSingle");
 });
 

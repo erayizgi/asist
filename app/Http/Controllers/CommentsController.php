@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use App\Comments;
 use Exception;
 use App\Libraries\TReq;
@@ -11,6 +12,32 @@ use Illuminate\Support\Facades\Validator;
 
 class CommentsController extends Controller
 {
+    public function select(Request $request, $post){
+        try {
+            $query = TReq::multiple($request, Comments::class);
+            $data = DB::table('tb_paylasimlar')->where('takipEdilenID', $request->user()->ID)->count();
+            $result = [
+                'metadata' => [
+                    'count' => 1,
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
+            ];
+
+            return Res::success(200, 'Users', $result);
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500, $message, $error);
+        }
+    }
+
     public function create(Request $request){
         try{
             $validator = Validator::make($request->all(), [
