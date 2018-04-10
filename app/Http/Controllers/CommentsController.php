@@ -15,10 +15,10 @@ class CommentsController extends Controller
     public function select(Request $request, $post){
         try {
             $query = TReq::multiple($request, Comments::class);
-            $data = DB::table('tb_paylasimlar')->where('takipEdilenID', $request->user()->ID)->count();
+            $data = DB::table('tb_paylasim_yorumlari')->where('paylasim_id', $post)->get();
             $result = [
                 'metadata' => [
-                    'count' => 1,
+                    'count' => $data->count(),
                     'offset' => $query['offset'],
                     'limit' => $query['limit'],
                 ],

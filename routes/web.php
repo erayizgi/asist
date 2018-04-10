@@ -61,6 +61,7 @@ Route::prefix("posts")->group(function(){
 });
 
 Route::prefix("comments")->group(function(){
+    Route::get("/{post}", "CommentsController@select");
     Route::post("/", "CommentsController@create")->middleware("auth:api");
     Route::patch("/", "CommentsController@update")->middleware("auth:api");
     Route::delete("/", "CommentsController@delete")->middleware("auth:api");
