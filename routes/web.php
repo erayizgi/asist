@@ -14,6 +14,7 @@
 Route::prefix('users')->group(function(){
     Route::get("/me","UserController@me")->middleware('auth:api');
     Route::get("/me/statistics","UserController@statistics")->middleware('auth:api');
+    Route::get("/activities","ActivityController@getActivities")->middleware("auth:api");
     Route::get("/","UserController@getUsers")->middleware('auth:api');
     Route::get("/search/{username}", "UserController@searchUser");
     Route::get("/{username}","UserController@getUser");
@@ -46,6 +47,8 @@ Route::prefix("message")->group(function(){
 
 Route::prefix("posts")->group(function(){
     Route::post("/", "PostsController@posts")->middleware("auth:api");
+    Route::get("{post_id}","PostsController@post");
+    Route::get("/comment/{comment_id}","PostsController@getByComment");
     Route::get("/feed", "PostsController@myFeed")->middleware("auth:api");
     Route::get("/couponDetail/{coupon_id}","PostsController@couponGames")->middleware("auth:api");
     Route::get("/couponStatus/{coupon_id}","PostsController@couponStatus");
