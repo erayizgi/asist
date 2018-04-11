@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Comments;
+use App\Sliders;
 use DB;
 use App\Coupon;
 use App\Follow;
@@ -17,6 +18,34 @@ use App\Libraries\Res;
 
 class HomeController extends Controller
 {
+    public function sliders(Request $request, $slider){
+        try{
+            $query = Treq::multiple($request, Sliders::class);
+            $data  = $query['query']->select('*')->where([
+                'position' => ($slider != 'top' ? '2' : '1')
+            ])->get();
+
+            $result = [
+                'metadata' => [
+                    'count' => $data->count(),
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
+            ];
+            return Res::success(200, 'Sliders', $result);
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail($e->getCode(), $e->getMessage(), $error);
+        }
+    }
+
     public function posts(Request $request){
         try {
             $query = TReq::multiple($request, Posts::class);
@@ -28,7 +57,10 @@ class HomeController extends Controller
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasimlar.kullanici_id")
                 ->where([
                     'kayitDurumu' => 1,
-                    'paylasim_tipi' => 1])->get();
+                    'paylasim_tipi' => 1])
+                ->orderBy('paylasim_id', 'DESC')
+                ->get();
+
             $result = [
                 'metadata' => [
                     'count' => $data->count(),
@@ -53,8 +85,39 @@ class HomeController extends Controller
     public function coupons(Request $request){
         try {
             $query = TReq::multiple($request, Posts::class);
+            $data  = $query['query']->select('tb_kuponlar.*', 'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
+                                    ->join("tb_kuponlar", "tb_kuponlar.kupon_id", "tb_paylasimlar.durum")
+                                    ->join('tb_kullanicilar', 'tb_kullanicilar.ID', 'tb_kuponlar.kupon_sahibi')
+                                    ->where([
+                                        'kayitDurumu'   => 1,
+                                        'paylasim_tipi' => 1
+                                    ])
+                                    ->orderBy("kesinKazanc", "DESC")
+                                    ->get();
+            $result = [
+                'metadata' => [
+                    'count' => $data->count(),
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
+            ];
+            return Res::success(200, 'Posts', $result);
+
+            /*
+             * SELECT tb_kuponlar.*,
+  tb_paylasimlar.durum,tb_kullanicilar.adSoyad, tb_kullanicilar.kullaniciAdi,
+  tb_kullanicilar.IMG
+FROM tb_kuponlar
+  INNER JOIN tb_paylasimlar ON tb_paylasimlar.durum = tb_kuponlar.kupon_id
+  INNER JOIN tb_kullanicilar ON tb_kullanicilar.ID = tb_kuponlar.kupon_sahibi
+WHERE kupon_sonucu = 'KAZANDI'
+ORDER BY kesinKazanc DESC, paylasilma_tarihi DESC
+             */
+
+
+            /*
             $data = $query['query']->select(
-                'tb_paylasimlar.*',
                 'tb_kuponlar.*',
                 'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasimlar.kullanici_id")

@@ -16,6 +16,34 @@ class UserController extends Controller
 {
     //
 
+    public function tippers(Request $request){
+        try{
+            $query = Treq::multiple($request, User::class);
+            $data  = $query['query']->where(['kullaniciYetki' => 1, 'kayitDurumu' => 1])->get();
+
+            $result = [
+                'metadata' => [
+                    'count' => 1,
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
+            ];
+
+            return Res::success(200, 'Tippers', $result);
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500, $message, $error);
+        }
+    }
+
+
     public function me(Request $request)
     {
         try {
@@ -115,6 +143,9 @@ class UserController extends Controller
                 'following' => DB::table('tb_takip')->where('takipEdenID', $data->ID)->count(),
                 'comments'  => DB::table('tb_paylasim_yorumlari')->where('kullanici_id', $data->ID)->count(),
                 'posts'     => DB::table('tb_paylasimlar')->where(['kullanici_id' => $data->ID, 'kayit_durumu' => 1])->count(),
+                'coupons'   => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data['ID']])->count(),
+                'won'       => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data['ID'], 'kupon_sonucu' => 'KAZANDI'])->count(),
+                'lose'      => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data['ID'],'kupon_sonucu' => 'KAYBETTI'])->count(),
             ];
 
             return Res::success(200, 'Users', $result);

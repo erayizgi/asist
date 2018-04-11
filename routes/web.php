@@ -17,6 +17,7 @@ Route::prefix("home")->group(function(){
 });
 
 Route::prefix('users')->group(function(){
+    Route::get("/tippers", "UserController@tippers")->middleware("auth:api");
     Route::get("/me","UserController@me")->middleware('auth:api');
     Route::get("/me/statistics","UserController@statistics")->middleware('auth:api');
     Route::get("/activities","ActivityController@getActivities")->middleware("auth:api");
@@ -72,6 +73,12 @@ Route::prefix("comments")->group(function(){
 Route::prefix("notifications")->group(function(){
     Route::get("/", "NotificationsController@notifications")->middleware("auth:api");
     Route::patch("/read", "NotificationsController@read")->middleware("auth:api");
+});
+
+Route::prefix("sliders")->group(function(){
+    Route::get("/nav", "SlidersController@nav");
+    Route::get("/video", "SlidersController@video");
+    Route::get("/header", "SlidersController@header");
 });
 
 Route::post("/follow", "FollowController@follow")->middleware("auth:api");
