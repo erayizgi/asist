@@ -55,8 +55,12 @@ Route::prefix("message")->group(function(){
 Route::prefix("posts")->group(function(){
     Route::post("/", "PostsController@posts")->middleware("auth:api");
     Route::get("{post_id}","PostsController@post");
+    Route::get("{post_id}/like_count","PostsController@likeCount");
+    Route::post("like","PostsController@like")->middleware("auth:api");
+    Route::get("{post_id}/liked","PostsController@hasLiked")->middleware("auth:api");
     Route::get("/comment/{comment_id}","PostsController@getByComment");
     Route::get("/feed/{username}","PostsController@getFeedOfUser");
+    Route::get("{post_id}/likers","PostsController@likers");
     //Route::get("/feed", "PostsController@myFeed")->middleware("auth:api");
     Route::get("/couponDetail/{coupon_id}","PostsController@couponGames")->middleware("auth:api");
     Route::get("/couponStatus/{coupon_id}","PostsController@couponStatus");
@@ -67,7 +71,7 @@ Route::prefix("comments")->group(function(){
     Route::get("/{post}", "CommentsController@select");
     Route::post("/", "CommentsController@create")->middleware("auth:api");
     Route::patch("/", "CommentsController@update")->middleware("auth:api");
-    Route::delete("/", "CommentsController@delete")->middleware("auth:api");
+    Route::delete("/{yorum_id}", "CommentsController@delete")->middleware("auth:api");
 });
 
 Route::prefix("notifications")->group(function(){

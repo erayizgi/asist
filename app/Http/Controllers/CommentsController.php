@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Activities;
+use App\Likes;
 use DB;
 use App\Comments;
 use Exception;
@@ -18,6 +19,10 @@ class CommentsController extends Controller
         try {
             $query = TReq::multiple($request, Comments::class);
             $data = $query["query"]
+                ->select(
+                    'tb_paylasim_yorumlari.*',
+                    'tb_paylasim_yorumlari.created_at as yorum_yapilan_tarih',
+                    'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
                 ->where('paylasim_id', $post)
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id");
             $result = [
@@ -133,18 +138,10 @@ class CommentsController extends Controller
         }
     }
 
-    public function delete(Request $request)
+    public function delete(Request $request,$yorum_id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'yorum_id' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                throw new Exception($validator->errors(), 400);
-            }
-
-            if (!Comments::where(['kullanici_id' => $request->user()->ID, 'yorum_id' => $request->yorum_id])->delete()) {
+            if (!Comments::where(['kullanici_id' => $request->user()->ID, 'yorum_id' => $yorum_id])->delete()) {
                 throw new Exception('an error', 400);
             }
             return Res::success(200, 'success', 'success');

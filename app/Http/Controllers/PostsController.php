@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Comments;
+use App\Likes;
 use App\User;
 use DB;
 use App\Coupon;
@@ -115,6 +116,16 @@ class PostsController extends Controller
             return Res::fail(500, $e->getMessage(), $error);
         }
 
+    }
+
+    public function likeCount($post)
+    {
+        try {
+            $data = Likes::where(["paylasim_id" => $post])->count();
+            return Res::success(200, 'likeCount', $data);
+        } catch (Exception $e) {
+
+        }
     }
 
     public function post($post_id)
@@ -249,6 +260,74 @@ class PostsController extends Controller
             ];
             $message = 'An error has occured!';
             return Res::fail(500, $e->getMessage(), $error);
+        }
+    }
+
+    public function like(Request $request)
+    {
+        try{
+            $check = Likes::where(["begenen_id"=>$request->user()->ID,"paylasim_id" => $request->post_id])->count();
+            if($check > 0){
+                $data = Likes::where(["begenen_id"=>$request->user()->ID,"paylasim_id"=>$request->post_id])->delete();
+                $result = false;
+            }else{
+                $data = Likes::create([
+                    "begenen_id"=> $request->user()->ID,
+                    "paylasim_id" => $request->post_id,
+                    "begenilen_tarih" => date("Y-m-d H:i:s")
+                ]);
+                $result = true;
+            }
+
+            return Res::success(201,"Liked",$result);
+        }catch (Exception $e){
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500, $e->getMessage(), $error);
+        }
+    }
+
+    public function hasLiked(Request $request, $post_id)
+    {
+        try{
+            $check = Likes::where(["begenen_id"=>$request->user()->ID,"paylasim_id" => $post_id])->count();
+            return Res::success(200,"HasLiked",($check > 0)? true : false);
+        }catch (Exception $e){
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500, $e->getMessage(), $error);
+
+        }
+    }
+
+    public function likers($post_id)
+    {
+        try{
+            $check = Likes::where(["paylasim_id" => $post_id])
+                ->select('tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
+                ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_begeni.begenen_id")
+                ->get();
+            return Res::success(200,"Likers",$check);
+        }catch (Exception $e){
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500, $e->getMessage(), $error);
+
         }
     }
 }
