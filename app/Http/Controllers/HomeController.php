@@ -18,33 +18,7 @@ use App\Libraries\Res;
 
 class HomeController extends Controller
 {
-    public function sliders(Request $request, $slider){
-        try{
-            $query = Treq::multiple($request, Sliders::class);
-            $data  = $query['query']->select('*')->where([
-                'position' => ($slider != 'top' ? '2' : '1')
-            ])->get();
 
-            $result = [
-                'metadata' => [
-                    'count' => $data->count(),
-                    'offset' => $query['offset'],
-                    'limit' => $query['limit'],
-                ],
-                'data' => $data
-            ];
-            return Res::success(200, 'Sliders', $result);
-        } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $e->getMessage(), $error);
-        }
-    }
 
     public function posts(Request $request){
         try {

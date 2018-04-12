@@ -85,5 +85,14 @@ Route::prefix("sliders")->group(function(){
     Route::get("/header", "SlidersController@header");
 });
 
+Route::prefix("forecast")->group(function(){
+   Route::get("/", "ForecastController@forecast");
+   Route::get("/{id}", "ForecastController@detail");
+   Route::post("/", "ForecastController@create")->middleware("auth:api");
+   Route::patch("/", "ForecastController@update")->middleware("auth:api");
+   Route::delete("/", "ForecastController@delete")->middleware("auth:api");
+});
+
+
 Route::post("/follow", "FollowController@follow")->middleware("auth:api");
 Route::post("/unfollow", "FollowController@unfollow")->middleware("auth:api");
