@@ -27,9 +27,8 @@ class PostsController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'paylasim_tipi' => 'required|filled',
-                'durum' => 'required|filled',
+                'resim' => 'sometimes|required|filled',
             ]);
-
             if ($validator->fails()) {
                 throw new Exception($validator->errors(), 400);
             }
