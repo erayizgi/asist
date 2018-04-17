@@ -61,6 +61,7 @@ Route::prefix("posts")->group(function(){
     Route::get("/comment/{comment_id}","PostsController@getByComment");
     Route::get("/feed/{username}","PostsController@getFeedOfUser");
     Route::get("{post_id}/likers","PostsController@likers");
+    Route::post("repost","PostsController@rePost")->middleware("auth:api");
     //Route::get("/feed", "PostsController@myFeed")->middleware("auth:api");
     Route::get("/couponDetail/{coupon_id}","PostsController@couponGames")->middleware("auth:api");
     Route::get("/couponStatus/{coupon_id}","PostsController@couponStatus");
