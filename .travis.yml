@@ -1,0 +1,4 @@
+deploy:
+  provider: gae
+  keyfile: "AsistAnaliz-49d1a431d261.json"
+  project: "asistanaliz-192209"
