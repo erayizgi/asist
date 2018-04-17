@@ -84,7 +84,11 @@ class UserController extends Controller
                 'followers' => DB::table('tb_takip')->where('takipEdilenID', $request->user()->ID)->count(),
                 'following' => DB::table('tb_takip')->where('takipEdenID', $request->user()->ID)->count(),
                 'comments'  => DB::table('tb_paylasim_yorumlari')->where('kullanici_id', $request->user()->ID)->count(),
-                'posts'     => DB::table('tb_paylasimlar')->where(['kullanici_id' => $request->user()->ID, 'kayit_durumu' => 1])->count()
+                'posts'     => DB::table('tb_paylasimlar')->where(['kullanici_id' => $request->user()->ID, 'kayit_durumu' => 1])->count(),
+                'coupons'   => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $request->user()->ID])->count(),
+                'won'       => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $request->user()->ID, 'kupon_sonucu' => 'KAZANDI'])->count(),
+                'lose'      => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $request->user()->ID,'kupon_sonucu' => 'KAYBETTI'])->count(),
+                'balance'   => DB::table('tb_points')->where(['user_id' => $request->user()->ID])->sum('amount')
             ];
 
             return Res::success(200, 'Users', $result);
@@ -146,6 +150,7 @@ class UserController extends Controller
                 'coupons'   => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data['ID']])->count(),
                 'won'       => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data['ID'], 'kupon_sonucu' => 'KAZANDI'])->count(),
                 'lose'      => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data['ID'],'kupon_sonucu' => 'KAYBETTI'])->count(),
+                'balance'   => DB::table('tb_points')->where(['user_id' => $data->ID])->sum('amount')
             ];
 
             return Res::success(200, 'Users', $result);

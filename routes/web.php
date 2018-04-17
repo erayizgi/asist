@@ -94,6 +94,18 @@ Route::prefix("forecast")->group(function(){
    Route::delete("/", "ForecastController@delete")->middleware("auth:api");
 });
 
+Route::prefix("points")->group(function(){
+    Route::post("/", "PointsController@create")->middleware("auth:api");
+    Route::patch("/", "PointsController@update")->middleware("auth:api");
+});
+
+Route::prefix("dictionary")->group(function(){
+    Route::get("/", "DictionaryController@index");
+    Route::get("/{slug}", "DictionaryController@detail");
+
+});
+
 
 Route::post("/follow", "FollowController@follow")->middleware("auth:api");
 Route::post("/unfollow", "FollowController@unfollow")->middleware("auth:api");
+

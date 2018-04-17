@@ -180,6 +180,24 @@ class ForecastController extends Controller
     }
 
     public function surveys(Request $request){
+        try{
+            $validator = Validator::make($request->all(), [
+                ''
+            ]);
 
+            if($validator->fails()){
+                throw new Exception($validator->errors(), 400);
+            }
+
+        } catch (Exception $e) {
+            $error = new \stdClass();
+            $error->errors = [
+                'exception' => [
+                    $e->getMessage()
+                ]
+            ];
+            $message = 'An error has occured!';
+            return Res::fail(500, $message, $error);
+        }
     }
 }
