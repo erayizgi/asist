@@ -66,6 +66,7 @@ class UserController extends Controller
         try{
             $user = User::where("kullaniciAdi",$username)->first();
             if(!$user){
+
                 throw new Exception("Kullanıcı bulunamadı",404);
             }
             $followers = Follow::where("takipEdilenID",$user->ID)
