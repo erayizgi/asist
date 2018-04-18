@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Follow;
 use DB;
 use App\User;
 use Exception;
@@ -43,6 +44,21 @@ class UserController extends Controller
         }
     }
 
+    public function following($username)
+    {
+        try{
+            $user = User::where("kullaniciAdi",$username)->first();
+            if(!$user){
+                throw new Exception("Kullanıcı bulunamadı",404);
+            }
+            $following = Follow::where("takipEdenID",$user->ID)
+                ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_takip.takipEdilenID","inner")
+                ->get();
+            return Res::success(200,"Takip edilenler",$following);
+        }catch (Exception $e){
+            return Res::fail($e->getCode(),$e->getMessage());
+        }
+    }
 
     public function me(Request $request)
     {

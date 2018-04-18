@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Activities;
 use App\Comments;
 use App\Likes;
 use App\User;
+use Carbon\Carbon;
 use DB;
 use App\Coupon;
 use App\Follow;
@@ -25,9 +27,8 @@ class PostsController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'paylasim_tipi' => 'required|filled',
-                'durum' => 'required|filled',
+                'resim' => 'sometimes|required|filled',
             ]);
-
             if ($validator->fails()) {
                 throw new Exception($validator->errors(), 400);
             }
@@ -43,7 +44,13 @@ class PostsController extends Controller
 
             $followers = DB::table("tb_takip")->where("takipEdilenID", $request->user()->ID)->where("kayitDurumu", 1)->get();
             $bildirimler = [];
-            $tip = "durum";
+            if($request->paylasim_tipi === 1){
+                $tip = "post";
+            }elseif($request->paylasim_tipi === 2){
+                $tip = "kupon";
+            }else{
+                $tip = "postOnWall";
+            }
 
             foreach ($followers as $f) {
                 array_push($bildirimler, [
@@ -53,11 +60,15 @@ class PostsController extends Controller
                     "olusturan_id" => $request->user()->ID
                 ]);
             }
-
+            Activities::create([
+                "kullanici_id" => $request->user()->ID,
+                "islem_turu" => $tip,
+                "islem_id" => $post->paylasim_id,
+                "islem_tarihi" => Carbon::now()->format("Y-m-d H:i:s")
+            ]);
             if (!Notifications::insert($bildirimler)) {
                 throw new Exception('notification errors', 400);
             }
-
             return Res::success(200, 'Durum paylaşıldı', $post);
 
         } catch (Exception $e) {

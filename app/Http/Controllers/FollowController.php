@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Follow;
+use App\User;
 use Exception;
 use App\Libraries\TReq;
 use App\Libraries\Res;
@@ -15,20 +16,20 @@ class FollowController extends Controller
     {
         try{
             $validator = Validator::make($request->all(), [
-               'takipEdilenID' => $request->kullanici_id
+               'kullanici_id' => "required"
             ]);
-
             if($validator->fails()){
                 throw new Exception($validator->errors(), 400);
             }
+            $user = User::where("kullaniciAdi",$request->kullanici_id)->first();
 
             $follow = Follow::insert([
                 'takipEdenID'   => $request->user()->ID,
-                'takipEdilenID' => $request->kullanici_id
+                'takipEdilenID' => $user->ID
             ]);
 
             if(!$follow){
-                throw new Exception($validator->errors(), 400);
+                throw new Exception("Bad Request", 400);
             }
 
             return Res::success(200,'follow', 'success');
@@ -56,10 +57,11 @@ class FollowController extends Controller
             if($validator->fails()){
                 throw new Exception($validator->errors(), 400);
             }
+            $user = User::where("kullaniciAdi",$request->kullanici_id)->first();
 
             $unfollow = Follow::where([
                 'takipEdenID'   => $request->user()->ID,
-                'takipEdilenID' => $request->kullanici_id
+                'takipEdilenID' => $user->ID
             ])->delete();
 
             if(!$unfollow){
