@@ -15,9 +15,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 class UserController extends Controller
 {
-    //
-
-
     public function tippers(Request $request){
         try{
             $query = Treq::multiple($request, User::class);
@@ -61,18 +58,29 @@ class UserController extends Controller
         }
     }
 
-    public function followers($username)
+    public function followers(Request $request,$username)
     {
         try{
             $user = User::where("kullaniciAdi",$username)->first();
             if(!$user){
-
                 throw new Exception("Kullanıcı bulunamadı",404);
             }
-            $followers = Follow::where("takipEdilenID",$user->ID)
-                ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_takip.takipEdilenID","inner")
+
+            $query = Treq::multiple($request, Follow::class);
+            $data  = $query['query']->where("takipEdilenID",$user->ID)
+                ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_takip.takipEdenID","inner")
                 ->get();
-            return Res::success(200,"Takip edenler",$followers);
+
+            $result = [
+                'metadata' => [
+                    'count' => 1,
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
+            ];
+
+            return Res::success(200,"Takip edenler",$result);
         }catch (Exception $e){
             return Res::fail($e->getCode(),$e->getMessage());
         }
