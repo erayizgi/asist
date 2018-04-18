@@ -13,11 +13,13 @@ use App\Follow;
 use App\Games;
 use App\Posts;
 use Exception;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
 use App\Notifications;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\TReq;
 use App\Libraries\Res;
+use Illuminate\Validation\ValidationException;
 
 class PostsController extends Controller
 {
@@ -30,7 +32,7 @@ class PostsController extends Controller
                 'resim' => 'sometimes|required|filled',
             ]);
             if ($validator->fails()) {
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $post = Posts::create([
@@ -40,7 +42,9 @@ class PostsController extends Controller
                 'resim' => $request->resim,
                 'paylasilan_gonderi' => $request->paylasilan_gonderi
             ]);
-
+            if(!$post){
+                throw new Exception("Post oluşturulamadı",Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
 
             $followers = DB::table("tb_takip")->where("takipEdilenID", $request->user()->ID)->where("kayitDurumu", 1)->get();
             $bildirimler = [];
@@ -67,19 +71,13 @@ class PostsController extends Controller
                 "islem_tarihi" => Carbon::now()->format("Y-m-d H:i:s")
             ]);
             if (!Notifications::insert($bildirimler)) {
-                throw new Exception('notification errors', 400);
+                throw new Exception('Bildirim oluşturulamadı', 400);
             }
             return Res::success(200, 'Durum paylaşıldı', $post);
-
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
