@@ -241,14 +241,14 @@ class UserController extends Controller
             ]);
 
             if ($validator->fails()) {
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
             $data = $request->only(['kullaniciAdi','password','adSoyad','email','kullaniciTelefon','kullaniciBulunduguUlke','kullaniciBulunduguSehir']);
             $data["password"] = bcrypt($data["password"]);
             if (User::create($data)) {
                 return Res::success(200, 'Users', 'user account has been created successfully');
             } else {
-                throw new Exception('user is not successfully created', 400);
+                throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         } catch (Exception $e) {
             $error = new \stdClass();
@@ -270,7 +270,7 @@ class UserController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $image = [
@@ -280,7 +280,7 @@ class UserController extends Controller
             if(User::find($request->user()->ID)->update($image)){
                 return Res::success(200, 'Users', User::find($request->user()->ID));
             } else {
-                throw new Exception('user is not successfully created', 400);
+                throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
         } catch (Exception $e) {
@@ -301,7 +301,7 @@ class UserController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $password = bcrypt($request->password);
@@ -309,7 +309,7 @@ class UserController extends Controller
             if(User::find($request->user()->ID)->update(['password' => $password])){
                 return Res::success(200, 'Users', 'user account password has been updated successfully');
             } else {
-                throw new Exception('user is not successfully created', 400);
+                throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
         } catch (Exception $e) {
@@ -330,11 +330,11 @@ class UserController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             if(!$user = User::where('email', $request->email)->first()){
-                throw new Exception('error', 400);
+                throw new Exception('error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             $gsm  = str_replace(['()', ')', '-'], '', $user->kullaniciTelefon);
@@ -344,11 +344,11 @@ class UserController extends Controller
             $client = new Client();
 
             if(!$client->request('GET', "http://facetahmin.e-panelim.com/Gonder.aspx?Site=FT&Tur=SMS&Tel='+$gsm+'&Icerik=$text")){
-                throw new Exception('sms error', 400);
+                throw new Exception('sms error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             if(!User::find($user->ID)->update(['password' => bcrypt($pass)])){
-                throw new Exception('error', 400);
+                throw new Exception('error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200, 'Users', 'sms ok');
@@ -376,14 +376,14 @@ class UserController extends Controller
             ]);
 
             if ($validator->fails()) {
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
             $data = $request->only(['adSoyad', 'kullaniciHakkinda', 'kullaniciDogumTarihi', 'kullaniciBulunduguUlke', 'kullaniciBulunduguSehir']);
             $data["kullaniciDogumTarihi"] = date("Y-m-d",strtotime($data["kullaniciDogumTarihi"]));
             if (User::find($request->user()->ID)->update($data)) {
                 return Res::success(200, 'Users', User::find($request->user()->ID));
             } else {
-                throw new Exception('user is not successfully created', 400);
+                throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         } catch (Exception $e) {
             $error = new \stdClass();

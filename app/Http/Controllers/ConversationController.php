@@ -84,7 +84,7 @@ class ConversationController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $conversation_id = Conversation::create([
@@ -94,7 +94,7 @@ class ConversationController extends Controller
 
 
             if(!Message::create(['conversation_id' => $conversation_id->conversation_id, 'user_id' => $request->user()->ID, 'content' => $request->message])) {
-                throw new Exception('conversation error', 400);
+                throw new Exception("conversation error", Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             $notification = [
@@ -105,7 +105,7 @@ class ConversationController extends Controller
             ];
 
             if(!Notifications::insert($notification)){
-                throw new Exception('notification errors', 400);
+                throw new Exception('notification errors', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200,'pm', 'success');
@@ -130,13 +130,13 @@ class ConversationController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             if(Message::create(['conversation_id' => $request->conversation_id, 'user_id' => $request->user()->ID, 'content' => $request->message])){
                 return Res::success(200,'pm', 'success');
             }else {
-                throw new Exception('an error', 400);
+                throw new Exception('an error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }catch (Exception $e){
             $error = new \stdClass();
@@ -183,12 +183,12 @@ class ConversationController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
 
             if(!Conversation::find($request->conversation_id)->delete()){
-                throw new Exception('an error', 400);
+                throw new Exception('an error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200,'success', 'success');

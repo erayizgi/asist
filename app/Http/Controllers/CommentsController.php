@@ -57,7 +57,7 @@ class CommentsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $create = Comments::create([
@@ -84,7 +84,7 @@ class CommentsController extends Controller
             ]);
 
             if (!$create) {
-                throw new Exception($validator->errors(), 400);
+                throw new Exception($validator->errors(), Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200, 'comments', $comment);
@@ -110,7 +110,7 @@ class CommentsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $update = Comments::where([
@@ -121,7 +121,7 @@ class CommentsController extends Controller
             ]);
 
             if (!$update) {
-                throw new Exception($validator->errors(), 400);
+                throw new Exception('update error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return res::success(200, 'comment', 'success');
@@ -142,7 +142,7 @@ class CommentsController extends Controller
     {
         try {
             if (!Comments::where(['kullanici_id' => $request->user()->ID, 'yorum_id' => $yorum_id])->delete()) {
-                throw new Exception('an error', 400);
+                throw new Exception('an error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
             return Res::success(200, 'success', 'success');
         } catch (Exception $e) {

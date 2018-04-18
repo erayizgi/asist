@@ -77,7 +77,7 @@ class StreamController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new Exception($validator->errors(), Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             Chat::create([

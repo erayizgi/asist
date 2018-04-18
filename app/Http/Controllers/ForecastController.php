@@ -83,7 +83,7 @@ class ForecastController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $create = [
@@ -93,7 +93,7 @@ class ForecastController extends Controller
             ];
 
             if(!Forecast::create($create)){
-                throw new Exception('Yorum Oluşturulurken Bir Hata Oluştu!', 400);
+                throw new Exception('Yorum Oluşturulurken Bir Hata Oluştu!', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200, 'success', 'Yorum Başarılı Bir Şekilde Oluşturuldu!');
@@ -118,7 +118,7 @@ class ForecastController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $update = Forecast::where([
@@ -127,7 +127,7 @@ class ForecastController extends Controller
             ])->update($request->all());
 
             if(!$update){
-                throw new Exception('Yorum Düzenlenirken Bir Hata Oluştu!', 400);
+                throw new Exception('Yorum Düzenlenirken Bir Hata Oluştu!', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200, 'success', 'Yorum Başarılı Bir Şekilde Düzenlendi!');
@@ -151,7 +151,7 @@ class ForecastController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $delete = Forecast::where([
@@ -162,7 +162,7 @@ class ForecastController extends Controller
             ]);
 
             if(!$delete){
-                throw new Exception('Yorum Silinirken Bir Hata Oluştu!', 400);
+                throw new Exception('Yorum Silinirken Bir Hata Oluştu!', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200, 'success', 'Yorum Başarılı Bir Şekilde Silindi!');

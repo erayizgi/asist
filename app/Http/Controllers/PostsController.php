@@ -28,8 +28,8 @@ class PostsController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'paylasim_tipi' => 'required|filled',
                 'resim' => 'sometimes|required|filled',
+                'paylasim_tipi' => 'required|filled',
             ]);
             if ($validator->fails()) {
                 throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());

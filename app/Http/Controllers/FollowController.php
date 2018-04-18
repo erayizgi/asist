@@ -19,7 +19,7 @@ class FollowController extends Controller
                'kullanici_id' => "required"
             ]);
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
             $user = User::where("kullaniciAdi",$request->kullanici_id)->first();
 
@@ -29,7 +29,7 @@ class FollowController extends Controller
             ]);
 
             if(!$follow){
-                throw new Exception("Bad Request", 400);
+                throw new Exception("Bad Request", Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200,'follow', 'success');
@@ -55,7 +55,7 @@ class FollowController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
             $user = User::where("kullaniciAdi",$request->kullanici_id)->first();
 
@@ -65,7 +65,7 @@ class FollowController extends Controller
             ])->delete();
 
             if(!$unfollow){
-                throw new Exception($validator->errors(), 400);
+                throw new Exception("Bad Request", Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200,'unfollow', 'success');

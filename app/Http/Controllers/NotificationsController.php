@@ -46,7 +46,7 @@ class NotificationsController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), 400);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             $read = Notifications::where([
@@ -57,7 +57,7 @@ class NotificationsController extends Controller
             ]);
 
             if(!$read){
-                throw new Exception($validator->errors(), 400);
+                throw new Exception($validator->errors(), Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return Res::success(200,'notifications', 'success');
