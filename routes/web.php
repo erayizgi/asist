@@ -29,7 +29,9 @@ Route::prefix('users')->group(function(){
     Route::patch("/reset","UserController@reset")->middleware('auth:api');
     Route::post("/forgot","UserController@forgot")->middleware('auth:api');
     Route::get("{username}/following","UserController@following");
+    Route::get("{username}/followers","UserController@followers");
     Route::post("/", "UserController@post");
+
 });
 
 Route::prefix("news")->group(function(){

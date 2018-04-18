@@ -17,6 +17,7 @@ class UserController extends Controller
 {
     //
 
+
     public function tippers(Request $request){
         try{
             $query = Treq::multiple($request, User::class);
@@ -55,6 +56,22 @@ class UserController extends Controller
                 ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_takip.takipEdilenID","inner")
                 ->get();
             return Res::success(200,"Takip edilenler",$following);
+        }catch (Exception $e){
+            return Res::fail($e->getCode(),$e->getMessage());
+        }
+    }
+
+    public function followers($username)
+    {
+        try{
+            $user = User::where("kullaniciAdi",$username)->first();
+            if(!$user){
+                throw new Exception("Kullanıcı bulunamadı",404);
+            }
+            $followers = Follow::where("takipEdilenID",$user->ID)
+                ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_takip.takipEdilenID","inner")
+                ->get();
+            return Res::success(200,"Takip edenler",$followers);
         }catch (Exception $e){
             return Res::fail($e->getCode(),$e->getMessage());
         }
