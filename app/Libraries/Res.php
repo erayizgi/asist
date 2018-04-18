@@ -26,6 +26,7 @@ class Res
 
     public static function fail($code = 404, $message = 'Not found!', $data = null)
     {
+        $code = $code > 500 ? 500: $code;
         $response = [
             'status' => false,
             'code' => $code,
