@@ -222,7 +222,7 @@ class ForecastController extends Controller
                         'option_three' => ForecastSurveys::Where(['mac_id' => $request->mac_id, 'yanit_id' => 3])->count(),
                     ],
 
-                    'is_exists' => true
+                    'is_exists' => false;
                 ];
             }else{
                 $result = [
