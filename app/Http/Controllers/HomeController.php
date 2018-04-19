@@ -45,14 +45,7 @@ class HomeController extends Controller
             ];
             return Res::success(200, 'Posts', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -115,14 +108,7 @@ ORDER BY kesinKazanc DESC, paylasilma_tarihi DESC
             return Res::success(200, 'Posts', $result);
             */
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 

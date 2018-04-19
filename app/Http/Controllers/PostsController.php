@@ -71,7 +71,7 @@ class PostsController extends Controller
                 "islem_tarihi" => Carbon::now()->format("Y-m-d H:i:s")
             ]);
             if (!Notifications::insert($bildirimler)) {
-                throw new Exception('Bildirim oluşturulamadı', 400);
+                throw new Exception('Bildirim oluşturulamadı', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
             return Res::success(200, 'Durum paylaşıldı', $post);
         } catch (ValidationException $e){
@@ -115,14 +115,7 @@ class PostsController extends Controller
 
             return Res::success(200, 'Feed', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
 
     }
@@ -133,7 +126,7 @@ class PostsController extends Controller
             $data = Likes::where(["paylasim_id" => $post])->count();
             return Res::success(200, 'likeCount', $data);
         } catch (Exception $e) {
-
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -146,14 +139,7 @@ class PostsController extends Controller
                 ->first();
             return Res::success(200, 'Post', $data);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -177,14 +163,7 @@ class PostsController extends Controller
             return Res::success(200, 'Post', $data);
 
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -201,14 +180,7 @@ class PostsController extends Controller
             return Res::success(200, 'Games', $result);
 
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -225,14 +197,7 @@ class PostsController extends Controller
             return Res::success(200, 'Coupon', $result);
 
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -261,14 +226,7 @@ class PostsController extends Controller
 
             return Res::success(200, 'Feed', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -289,15 +247,8 @@ class PostsController extends Controller
             }
 
             return Res::success(201,"Liked",$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -306,16 +257,8 @@ class PostsController extends Controller
         try{
             $check = Likes::where(["begenen_id"=>$request->user()->ID,"paylasim_id" => $post_id])->count();
             return Res::success(200,"HasLiked",($check > 0)? true : false);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
-
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -327,16 +270,8 @@ class PostsController extends Controller
                 ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_begeni.begenen_id")
                 ->get();
             return Res::success(200,"Likers",$check);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $e->getMessage(), $error);
-
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 }

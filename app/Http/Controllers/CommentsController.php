@@ -11,6 +11,8 @@ use App\Libraries\TReq;
 use App\Libraries\Res;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Validation\ValidationException;
 
 class CommentsController extends Controller
 {
@@ -36,14 +38,7 @@ class CommentsController extends Controller
 
             return Res::success(200, 'Users', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -89,15 +84,10 @@ class CommentsController extends Controller
 
             return Res::success(200, 'comments', $comment);
 
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -126,34 +116,25 @@ class CommentsController extends Controller
 
             return res::success(200, 'comment', 'success');
 
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
     public function delete(Request $request,$yorum_id)
     {
         try {
+
             if (!Comments::where(['kullanici_id' => $request->user()->ID, 'yorum_id' => $yorum_id])->delete()) {
                 throw new Exception('an error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+
             return Res::success(200, 'success', 'success');
+
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+                return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 }

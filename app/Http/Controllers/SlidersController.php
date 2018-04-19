@@ -26,15 +26,8 @@ class SlidersController extends Controller
                 'data' => $data
             ];
             return Res::success(200, 'Sliders', $result);
-        }catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -54,15 +47,8 @@ class SlidersController extends Controller
                 'data' => $data
             ];
             return Res::success(200, 'Sliders', $result);
-        }catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -82,15 +68,8 @@ class SlidersController extends Controller
                 'data' => $data
             ];
             return Res::success(200, 'Sliders', $result);
-        }catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 }

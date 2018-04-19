@@ -9,6 +9,9 @@ use App\Libraries\TReq;
 use App\Libraries\Res;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Validation\ValidationException;
+
 
 class ConversationController extends Controller
 {
@@ -31,15 +34,8 @@ class ConversationController extends Controller
             }
 
             return Res::success(200,'inbox',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -63,15 +59,8 @@ class ConversationController extends Controller
             }
 
             return Res::success(200,'outbox',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -110,15 +99,10 @@ class ConversationController extends Controller
 
             return Res::success(200,'pm', 'success');
 
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -138,15 +122,10 @@ class ConversationController extends Controller
             }else {
                 throw new Exception('an error', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -164,15 +143,8 @@ class ConversationController extends Controller
             ];
 
             return Res::success(200,'Conversations',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -193,16 +165,10 @@ class ConversationController extends Controller
 
             return Res::success(200,'success', 'success');
 
-
-        }catch(Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 

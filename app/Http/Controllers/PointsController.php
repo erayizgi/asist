@@ -9,7 +9,8 @@ use App\Libraries\Res;
 use App\Libraries\TReq;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Validation\ValidationException;
 class PointsController extends Controller
 {
     public function create(Request $request){
@@ -37,15 +38,10 @@ class PointsController extends Controller
 
             return Res::success(200, "success", "Puan Başarılı Bir Şekilde Oluşturuldu!");
 
-        }catch(Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -70,15 +66,10 @@ class PointsController extends Controller
 
             return Res::success(200, "success", "Puan Başarılı Bir Şekilde Düzenlendi!");
 
-        }catch(Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 }

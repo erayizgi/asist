@@ -9,6 +9,8 @@ use App\Libraries\TReq;
 use App\Libraries\Res;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Validation\ValidationException;
 
 class StreamController extends Controller
 {
@@ -28,15 +30,8 @@ class StreamController extends Controller
             ];
 
             return Res::success(200,'Streams',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -55,15 +50,8 @@ class StreamController extends Controller
             ];
 
             return Res::success(200,'Stream',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -77,7 +65,7 @@ class StreamController extends Controller
             ]);
 
             if($validator->fails()){
-                throw new Exception($validator->errors(), Response::HTTP_INTERNAL_SERVER_ERROR);
+                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
 
             Chat::create([
@@ -86,17 +74,33 @@ class StreamController extends Controller
                 'mesajAciklamasi' => $request->mesajAciklamasi,
             ]);
 
-            return Res::success(200,'Users', 'success');
+            return Res::success(200,'Chat', 'success');
 
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
+        }
+    }
+
+    public function getMessage(Request $request, $id)
+    {
+        try{
+            $query = TReq::multiple($request, Chat::class);
+            $data = $query['query']->select("tb_sohbetler.*", "tb_kullanicilar.kullaniciAdi", "tb_kullanicilar.adSoyad", "tb_kullanicilar.IMG")->join("tb_kullanicilar", "tb_kullanicilar.ID", "kullaniciID", "inner")->where('yayinID', $id)->get();
+
+            $result = [
+                'metadata' => [
+                    'count' => $data->count(),
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
             ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+
+            return Res::success(200, 'Chat', $result);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 }

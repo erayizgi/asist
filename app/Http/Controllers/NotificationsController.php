@@ -33,14 +33,7 @@ class NotificationsController extends Controller
 
             return Res::success(200, 'notifications', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 

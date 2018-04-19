@@ -27,15 +27,8 @@ class NewsController extends Controller
             ];
 
             return Res::success(200,'News',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -53,15 +46,8 @@ class NewsController extends Controller
             ];
 
             return Res::success(200,'News',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -80,15 +66,8 @@ class NewsController extends Controller
             ];
 
             return Res::success(200,'News',$result);
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 }

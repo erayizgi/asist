@@ -44,6 +44,7 @@ Route::prefix("streams")->group(function(){
     Route::get("/", "StreamController@getStreams");
     Route::get("/{slug}", "StreamController@getStream");
     Route::post("/chat", "StreamController@sendMessage")->middleware("auth:api");
+    Route::get("/chat/{id}", "StreamController@getMessage");
 });
 
 Route::prefix("message")->group(function(){
@@ -95,6 +96,9 @@ Route::prefix("forecast")->group(function(){
    Route::post("/", "ForecastController@create")->middleware("auth:api");
    Route::patch("/", "ForecastController@update")->middleware("auth:api");
    Route::delete("/", "ForecastController@delete")->middleware("auth:api");
+
+   Route::post("/surveys", "ForecastController@surveys")->middleware("auth:api");
+   Route::post("/surveys/check", "ForecastController@check")->middleware("auth:api");
 });
 
 Route::prefix("points")->group(function(){

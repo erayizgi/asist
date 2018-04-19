@@ -9,6 +9,8 @@ use App\Libraries\TReq;
 use App\Libraries\Res;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Validation\ValidationException;
 
 class FollowController extends Controller
 {
@@ -35,15 +37,10 @@ class FollowController extends Controller
             return Res::success(200,'follow', 'success');
 
 
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -70,15 +67,10 @@ class FollowController extends Controller
 
             return Res::success(200,'unfollow', 'success');
 
-        }catch (Exception $e){
-            $error = new \stdClass();
-            $error->errors = [
-                'exception'=>[
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500,$message,$error);
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 }

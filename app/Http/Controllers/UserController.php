@@ -8,6 +8,8 @@ use App\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Validation\ValidationException;
 use App\Libraries\TReq;
 use App\Libraries\Res;
 
@@ -31,14 +33,7 @@ class UserController extends Controller
 
             return Res::success(200, 'Tippers', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -53,8 +48,8 @@ class UserController extends Controller
                 ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_takip.takipEdilenID","inner")
                 ->get();
             return Res::success(200,"Takip edilenler",$following);
-        }catch (Exception $e){
-            return Res::fail($e->getCode(),$e->getMessage());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -102,14 +97,7 @@ class UserController extends Controller
 
             return Res::success(200, 'Users', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -135,14 +123,7 @@ class UserController extends Controller
 
             return Res::success(200, 'Users', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -162,14 +143,7 @@ class UserController extends Controller
 
             return Res::success(200, 'Users', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -197,14 +171,7 @@ class UserController extends Controller
 
             return Res::success(200, 'Users', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -224,14 +191,7 @@ class UserController extends Controller
 
             return Res::success(200, 'Users', $result);
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => [
-                    $e->getMessage()
-                ]
-            ];
-            $message = 'An error has occured!';
-            return Res::fail(500, $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -258,14 +218,10 @@ class UserController extends Controller
             } else {
                 throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => json_decode($e->getMessage())
-
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -291,13 +247,10 @@ class UserController extends Controller
                 throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => json_decode($e->getMessage())
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -320,13 +273,10 @@ class UserController extends Controller
                 throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => json_decode($e->getMessage())
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -362,13 +312,10 @@ class UserController extends Controller
             return Res::success(200, 'Users', 'sms ok');
 
 
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => json_decode($e->getMessage())
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
     }
 
@@ -393,13 +340,10 @@ class UserController extends Controller
             } else {
                 throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+        } catch (ValidationException $e){
+            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
-            $error = new \stdClass();
-            $error->errors = [
-                'exception' => json_decode($e->getMessage())
-            ];
-            $message = 'An error has occured!';
-            return Res::fail($e->getCode(), $message, $error);
+            return Res::fail($e->getCode(), $e->getMessage());
         }
 
         /*
