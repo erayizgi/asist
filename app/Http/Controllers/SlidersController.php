@@ -25,7 +25,7 @@ class SlidersController extends Controller
                 ],
                 'data' => $data
             ];
-            return Res::success(200, 'Sliders', $result);
+            return Res::success(200, 'navigation tab menu sliders', $result);
         } catch (Exception $e) {
             return Res::fail($e->getCode(), $e->getMessage());
         }
@@ -46,7 +46,7 @@ class SlidersController extends Controller
                 ],
                 'data' => $data
             ];
-            return Res::success(200, 'Sliders', $result);
+            return Res::success(200, 'header big sliders', $result);
         } catch (Exception $e) {
             return Res::fail($e->getCode(), $e->getMessage());
         }

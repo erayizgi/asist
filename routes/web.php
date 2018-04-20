@@ -14,6 +14,7 @@
 Route::prefix("home")->group(function(){
     Route::get("/posts", "HomeController@posts");
     Route::get("/coupons", "HomeController@coupons");
+    Route::get("/population", "HomeController@population");
 });
 
 Route::prefix('users')->group(function(){

@@ -26,20 +26,10 @@ class ForecastController extends Controller
     public function forecast(Request $request){
         try {
             $query = Treq::multiple($request, Forecast::class);
-            $data  = $query['query']
-                ->select('*')
-                ->select('(SELECT odd FROM odd_options WHERE odd_options_event_id = events.event_id AND odd_options. odd_type = 1 AND odd_options.odd_option = 1) AS S1')
-                ->select('(SELECT odd FROM odd_options WHERE odd_options_event_id = events.event_id AND odd_options. odd_type = 1 AND odd_options.odd_option = "X") AS SX')
-                ->select('(SELECT odd FROM odd_options WHERE odd_options_event_id = events.event_id AND odd_options. odd_type = 1 AND odd_options.odd_option = 2) AS S2')->get();
-
-            return $data;
-
-
-            /*
-            $query = TReq::multiple($request, Forecast::class);
             $data  = $query['query']->select( 'events.event_id', 'events.home', 'events.away', 'events.league_code', 'events.league_name', 'events.event_oid')
-                                    ->join('events', 'tb_iddaa_tahminleri.mac_id', 'events.identifier_id')
-                                    ->orderBy('tb_iddaa_tahminleri.mac_id', 'DESC')->get();
+                ->join('events', 'tb_iddaa_tahminleri.mac_id', 'events.identifier_id')
+                ->orderBy('tb_iddaa_tahminleri.mac_id', 'DESC')->get();
+
             $result = [
                 'metadata' => [
                     'count' => $data->count(),
@@ -49,7 +39,7 @@ class ForecastController extends Controller
                 'data' => $data
             ];
             return Res::success(200, 'Forecasts', $result);
-            */
+
         } catch (Exception $e) {
             return Res::fail($e->getCode(), $e->getMessage());
         }
@@ -57,14 +47,8 @@ class ForecastController extends Controller
 
     public function detail(Request $request, $id){
         try {
-            $query = TReq::multiple($request, Forecast::class);
-            $data  = $query['query']->select( 'events.event_id', 'events.home', 'events.away', 'events.league_code', 'events.league_name', 'events.event_oid')
-                ->join('events', 'tb_iddaa_tahminleri.mac_id', 'events.identifier_id')
-                ->where(['tb_iddaa_tahminleri.mac_id' => $id, 'events.event_id' => $id])->get();
-
-            //$data = $query['query']->where('event_id', $id)->first();
-
-
+            $query = TReq::multiple($request, Events::class);
+            $data  = $query['query']->select('event_id', 'home', 'away', 'league_code', 'league_name', 'event_oid', 'identifier_id')->where('identifier_id',  $id)->get();
             $result = [
                 'metadata' => [
                     //'count' => $data->count(),
@@ -222,7 +206,7 @@ class ForecastController extends Controller
                         'option_three' => ForecastSurveys::Where(['mac_id' => $request->mac_id, 'yanit_id' => 3])->count(),
                     ],
 
-                    'is_exists' => false;
+                    'is_exists' => true
                 ];
             }else{
                 $result = [

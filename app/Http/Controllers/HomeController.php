@@ -112,9 +112,35 @@ ORDER BY kesinKazanc DESC, paylasilma_tarihi DESC
         }
     }
 
-    public function population(){
+    public function population(Request $request){
+        try{
+            $query = Treq::multiple($request, Coupon::class);
+            $data  = $query['query']->select('tb_kuponlar.kupon_id', 'tb_kuponlar.kupon_sahibi', 'tb_kuponlar.kupon_sonucu', 'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
+                ->join('tb_kullanicilar', 'tb_kullanicilar.ID', 'tb_kuponlar.kupon_sahibi')->count();
 
+            $result = [
+                'metadata' => [
+                    'count' => 0,
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $data
+            ];
+            return Res::success(200, 'navigation tab menu sliders', $result);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
+        }
     }
+
+
+    /*
+     * $this->db->select("*");
+		$this->db->select("((SELECT COUNT(tb_kuponlar.kupon_id) FROM tb_kuponlar WHERE tb_kuponlar.kupon_sahibi = tb_kullanicilar.ID AND tb_kuponlar.kupon_sonucu = 'KAZANDI')/(SELECT COUNT(tb_kuponlar.kupon_id) FROM tb_kuponlar WHERE tb_kuponlar.kupon_sahibi = tb_kullanicilar.ID AND (tb_kuponlar.kupon_sonucu = 'KAZANDI' OR tb_kuponlar.kupon_sonucu='KAYBETTI')))*100 AS yuzde");
+		$this->db->where("populer", 1);
+		$this->db->order_by("yuzde","DESC");
+		return $this->db->get("tb_kullanicilar");
+     */
+
 
 /*
  *             $data = $query['query']->join("tb_paylasimlar", "tb_paylasimlar.kullanici_id", "tb_takip.takipEdilenID")
