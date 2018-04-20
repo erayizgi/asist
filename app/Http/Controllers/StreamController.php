@@ -58,7 +58,6 @@ class StreamController extends Controller
     public function sendMessage(Request $request)
     {
         try{
-
             $validator = Validator::make($request->all(), [
                 'yayinID'         => 'required|filled',
                 'mesajAciklamasi' => 'required|filled|min:3',
@@ -67,7 +66,10 @@ class StreamController extends Controller
             if($validator->fails()){
                 throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
-
+            $yayin = Stream::where("ID",$request->yayinID)->where("canliYayin",1)->get();
+            if($yayin->count() === 0){
+                throw new Exception("Canlı olmayan yayına mesaj gönderemezsiniz",Response::HTTP_FORBIDDEN);
+            }
             Chat::create([
                 'yayinID'         => $request->yayinID,
                 'kullaniciID'     => $request->user()->ID,
@@ -75,7 +77,6 @@ class StreamController extends Controller
             ]);
 
             return Res::success(200,'Chat', 'success');
-
         } catch (ValidationException $e){
             return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
         } catch (Exception $e) {
@@ -87,20 +88,25 @@ class StreamController extends Controller
     {
         try{
             $query = TReq::multiple($request, Chat::class);
-            $data = $query['query']->select("tb_sohbetler.*", "tb_kullanicilar.kullaniciAdi", "tb_kullanicilar.adSoyad", "tb_kullanicilar.IMG")->join("tb_kullanicilar", "tb_kullanicilar.ID", "kullaniciID", "inner")->where('yayinID', $id)->get();
-
+            $data = $query['query']->select("tb_sohbetler.*", "tb_kullanicilar.kullaniciAdi", "tb_kullanicilar.adSoyad", "tb_kullanicilar.IMG")
+                ->join("tb_kullanicilar", "tb_kullanicilar.ID", "kullaniciID", "inner")
+                ->where('yayinID', $id)->get()->toArray();
+            $chat = [];
+            foreach($data as $k=>$v){
+                $chat[] = array_pop($data);
+            }
             $result = [
                 'metadata' => [
-                    'count' => $data->count(),
+                    'count' => count($data),
                     'offset' => $query['offset'],
                     'limit' => $query['limit'],
                 ],
-                'data' => $data
+                'data' => $chat
             ];
 
             return Res::success(200, 'Chat', $result);
         } catch (Exception $e) {
-            return Res::fail($e->getCode(), $e->getMessage());
+            return Res::fail(500, $e->getMessage());
         }
     }
 }
