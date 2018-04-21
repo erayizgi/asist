@@ -35,7 +35,10 @@ class NewsController extends Controller
     public function sideNews(Request $request){
         try{
             $query = TReq::multiple($request, News::class);
-            $data = $query['query']->where(['haberKoseYazi' => 1, 'kayitDurumu' => 1])->get();
+            $data = $query['query']
+                ->select("tb_haberler.*","tb_kullanicilar.kullaniciAdi","tb_kullanicilar.IMG","tb_kullanicilar.adSoyad")
+                ->join("tb_kullanicilar","tb_kullanicilar.ID","tb_haberler.kullaniciID")
+                ->where(['haberKoseYazi' => 1, 'tb_haberler.kayitDurumu' => 1])->get();
             $result = [
                 'metadata'=>[
                     'count'=>$data->count(),
