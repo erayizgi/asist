@@ -21,7 +21,7 @@ class NotificationsController extends Controller
             $data = $query['query']
                 ->select("bildirimler.*", "tb_kullanicilar.kullaniciAdi", "tb_kullanicilar.adSoyad", "tb_kullanicilar.IMG")
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "olusturan_id", "inner")
-                ->where('alici_id', $request->user()->ID)->where("okundu", 0)->get();
+                ->where('alici_id', $request->user()->ID)->orderBy("bildirimler.created_at","desc")->get();
             $result = [
                 'metadata' => [
                     'count' => $data->count(),
