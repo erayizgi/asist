@@ -58,7 +58,7 @@ class ForecastController extends Controller
                 'league_name', 'event_oid', 'identifier_id')->where('identifier_id',  $id)->first();
             */
             $data = DB::table('events')
-                ->select('events.event_id', 'events.home', 'events.away', 'events.league_code')
+                ->select('events.event_id', 'events.home', 'events.away', 'events.country', 'events.league_code')
                 ->selectSub("SELECT odd FROM odd_options WHERE odd_options.event_id = events.event_id AND odd_options.odd_type_id = 1 AND odd_options.odd_option = 1", 'S1')
                 ->selectSub("SELECT odd FROM odd_options WHERE odd_options.event_id = events.event_id AND odd_options.odd_type_id = 1 AND odd_options.odd_option = 'X'", 'SX')
                 ->selectSub("SELECT odd FROM odd_options WHERE odd_options.event_id = events.event_id AND odd_options.odd_type_id = 1 AND odd_options.odd_option = 2", 'S2')
@@ -101,7 +101,7 @@ class ForecastController extends Controller
                 throw new Exception('Yorum Oluşturulurken Bir Hata Oluştu!', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
-            return Res::success(200, 'success', 'Yorum Başarılı Bir Şekilde Oluşturuldu!');
+            return Res::success(200, 'Yorum Başarılı Bir Şekilde Oluşturuldu!');
 
         } catch (ValidationException $e){
             return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
@@ -184,16 +184,8 @@ class ForecastController extends Controller
                 'kullanici_id' => $request->user()->ID
             ])->count();
 
-            $result = [
-                'results'   => [
-                    'option_one'   => ForecastSurveys::where(['mac_id' => $request->mac_id, 'yanit_id' => 1])->count(),
-                    'option_two'   => ForecastSurveys::where(['mac_id' => $request->mac_id, 'yanit_id' => 2])->count(),
-                    'option_three' => ForecastSurveys::Where(['mac_id' => $request->mac_id, 'yanit_id' => 3])->count(),
-                ],
-            ];
-
             if($check > 0){
-                return Res::success(200, 'Daha Önce Bu Ankete Katılım Sağladınız!', $result);
+                throw new Exception('Daha Önce Bu Ankete Katılım Sağladınız!', Response::HTTP_BAD_REQUEST);
             }else{
                 $create = ForecastSurveys::insert([
                     'mac_id'       => $request->mac_id,
@@ -206,15 +198,7 @@ class ForecastController extends Controller
                 }
             }
 
-            $result = [
-                'results'   => [
-                    'option_one'   => ForecastSurveys::where(['mac_id' => $request->mac_id, 'yanit_id' => 1])->count(),
-                    'option_two'   => ForecastSurveys::where(['mac_id' => $request->mac_id, 'yanit_id' => 2])->count(),
-                    'option_three' => ForecastSurveys::Where(['mac_id' => $request->mac_id, 'yanit_id' => 3])->count(),
-                ],
-            ];
-
-            return Res::success(200, 'Ankete Başarılı Bir Şekilde Katılınız!', $result);
+            return Res::success(200, 'Ankete Başarılı Bir Şekilde Katılınız!');
 
         } catch (ValidationException $e){
             return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
@@ -254,6 +238,10 @@ class ForecastController extends Controller
                     'is_exists' => false
                 ];
             }
+
+            return Res::success(200, 'Ankete Başarılı Bir Şekilde Katılınız!', $result);
+
+
 
 
 
