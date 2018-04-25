@@ -113,6 +113,13 @@ Route::prefix("dictionary")->group(function(){
 
 });
 
+Route::prefix("coupon")->group(function(){
+   Route::get("/football", "CouponController@football");
+   Route::get("/basketball", "CouponController@basketball");
+   Route::get("/events", "CouponController@events");
+   Route::get("/odds/{event_id}", "CouponController@odds");
+});
+
 
 Route::post("/follow", "FollowController@follow")->middleware("auth:api");
 Route::post("/unfollow", "FollowController@unfollow")->middleware("auth:api");
