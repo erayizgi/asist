@@ -613,7 +613,6 @@ class CouponController extends Controller
 			$events = Events::where('event_id',$event_id)->where('start_date','>=', $now->getTimestamp());
 
 			if ($events->count() > 0) {
-				//SELECT `odd_type`, `odd_options`.`odd_type_id` FROM `odd_options` LEFT JOIN `odd_types` ON `odd_types`.`odd_type_id` = `odd_options`.`odd_type_id` WHERE `event_id` = '589' GROUP BY `odd_type` ORDER BY `odd_type_id` ASC
 
 				$odd_group = DB::table('odd_options')->select('odd_types.odd_type', 'odd_options.odd_type_id')
 					->join('odd_types', function ($join) {
@@ -623,19 +622,11 @@ class CouponController extends Controller
 					->groupBy('odd_type','odd_type_id')
 					->get();
 
-				/*
-				$odd_group = DB::table('odd_options')->select('odd_types.odd_type', 'odd_options.odd_type_id')
-					->join('odd_types', 'odd_types.odd_type_id', 'odd_options.odd_type_id', 'left')
-					->where('event_id', $event_id)
-					->groupBy('odd_types.odd_type')
-					->orderBy('odd_types.odd_type_id', 'ASC')->get();
-				*/
 				foreach($odd_group as $k => $v){
 					$odd_group[$k]->options = DB::table('odd_options')->select('odd_option', 'odd', 'odd_option_id')
 						->join('odd_types', 'odd_types.odd_type_id', 'odd_options.odd_type_id', 'left')
 						->where('event_id', $event_id)
 						->where('odd_options.odd_type_id', $odd_group[$k]->odd_type_id)->get();
-
 				}
 
 				return Res::success(200, 'Maçlar', $odd_group);
@@ -643,53 +634,37 @@ class CouponController extends Controller
 			}else{
 				throw new Exception("Couldn't find the event",Response::HTTP_NOT_FOUND);
 			}
-
-
-
 		} catch (exception $e) {
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
-
-		//$event = $this->db->get_where("events",array("start_date>="=>$dt,"event_id" => $mac_id));
-		//		if($event->num_rows() >0){
-		//			$this->db->select("odd_type,odd_options.odd_type_id");
-		//			$this->db->join("odd_types","odd_types.odd_type_id = odd_options.odd_type_id","left");
-		//			$this->db->where("event_id",$mac_id);
-		//			$this->db->group_by("odd_type");
-		//			$this->db->order_by("odd_type_id","ASC");
-		//			$odd_group = $this->db->get("odd_options")->result_array();
-		//			foreach($odd_group as $key=>$val){
-		//				$this->db->select("odd_option,odd,odd_option_id");
-		//				$this->db->join("odd_types","odd_types.odd_type_id = odd_options.odd_type_id","left");
-		//				$this->db->where("event_id",$mac_id);
-		//				$this->db->where("odd_options.odd_type_id",$odd_group[$key]["odd_type_id"]);
-		//				$odd_group[$key]["options"] = $this->db->get("odd_options")->result_array();
-		//			}
-		//			return $odd_group;
-		//		}else{
-		//			return FALSE;
-		//		}
 	}
 
+	public function check(Request $request)
+    {
+	    try{
 
-	//public function get_oranlar($mac_id)
-	//	{
-	//		$now = new DateTime();
-	//		$odds = $this->Kupon_model->get_oranlar($now->getTimestamp(), $mac_id);
-	//		if (count($odds) > 0) {
-	//			$result = array(
-	//				"status" => TRUE,
-	//				"data"   => $odds
-	//			);
-	//		} else {
-	//			$result = array(
-	//				"status"  => FALSE,
-	//				"message" => "Bu maça bahisler kapanmıştır"
-	//			);
-	//		}
-	//		$this->output->set_content_type('application/json')->set_output(json_encode($result));
-	//	}
+	        $validator = Validator::make($request->all(), [
+	            'choice' => 'required'
+            ]);
 
-	//
+	        if($validator->fails()){
+	            throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
+            }
+
+            $events = DB::table('odd_options')
+                    ->select('odd_option_id' , 'odd_option' , 'odd_type', 'league_name','league_code','home','away','start_date','event_oid','odd','events.event_id')
+                    ->join('odd_types', 'odd_types.odd_type_id', 'odd_options.odd_type_id', 'left')
+                    ->join('events', 'events.event_id', 'odd_options.event_id')
+                    ->where('odd_option_id', $request->choice)
+                    ->get();
+
+            if ($validator->fails()) {
+                throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
+            }
+
+        }catch(Exception $e){
+	        return Res::fail($e->getCode(), $e->getMessage());
+        }
+    }
 
 }
