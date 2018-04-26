@@ -83,6 +83,7 @@ Route::prefix("comments")->group(function () {
 Route::prefix("notifications")->group(function () {
     Route::get("/", "NotificationsController@notifications")->middleware("auth:api");
     Route::patch("/", "NotificationsController@read")->middleware("auth:api");
+    Route::patch("/all", "NotificationsController@mark")->middleware("auth:api");
 });
 
 Route::prefix("sliders")->group(function () {

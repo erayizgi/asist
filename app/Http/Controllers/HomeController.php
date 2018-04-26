@@ -125,7 +125,7 @@ ORDER BY kesinKazanc DESC, paylasilma_tarihi DESC
 
     public function population(){
         try{
-            $data  = DB::select("SELECT tb_kullanicilar.adSoyad, tb_kullanicilar.IMG, tb_kullanicilar.kullaniciAdi, ((SELECT COUNT(tb_kuponlar.kupon_id) FROM tb_kuponlar WHERE tb_kuponlar.kupon_sahibi = tb_kullanicilar.ID AND tb_kuponlar.kupon_sonucu = 'KAZANDI')/(SELECT COUNT(tb_kuponlar.kupon_id) FROM tb_kuponlar WHERE tb_kuponlar.kupon_sahibi = tb_kullanicilar.ID AND (tb_kuponlar.kupon_sonucu = 'KAZANDI' OR tb_kuponlar.kupon_sonucu='KAYBETTI')))*100 AS yuzde FROM `tb_kullanicilar` WHERE `populer` = 1 ORDER BY `yuzde` DESC");
+            $data  = DB::select("SELECT tb_kullanicilar.adSoyad, tb_kullanicilar.IMG, tb_kullanicilar.kullaniciAdi, ((SELECT COUNT(tb_kuponlar.kupon_id) FROM tb_kuponlar WHERE tb_kuponlar.kupon_sahibi = tb_kullanicilar.ID AND tb_kuponlar.kupon_sonucu = 'KAZANDI')/(SELECT COUNT(tb_kuponlar.kupon_id) FROM tb_kuponlar WHERE tb_kuponlar.kupon_sahibi = tb_kullanicilar.ID AND (tb_kuponlar.kupon_sonucu = 'KAZANDI' OR tb_kuponlar.kupon_sonucu='KAYBETTI')))*100 AS yuzde FROM `tb_kullanicilar` WHERE `populer` = 1 ORDER BY `yuzde` DESC LIMIT 6");
             return Res::success(200, 'navigation tab menu sliders', $data);
         } catch (Exception $e) {
             return Res::fail($e->getCode(), $e->getMessage());

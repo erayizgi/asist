@@ -21,7 +21,7 @@ class NotificationsController extends Controller
             $data = $query['query']
                 ->select("bildirimler.*", "tb_kullanicilar.kullaniciAdi", "tb_kullanicilar.adSoyad", "tb_kullanicilar.IMG")
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "olusturan_id", "inner")
-                ->where('alici_id', $request->user()->ID)->orderBy("bildirimler.created_at","desc")->get();
+                ->where(['alici_id' => $request->user()->ID, 'okundu' => 0])->orderBy("bildirimler.created_at","desc")->get();
             $result = [
                 'metadata' => [
                     'count' => $data->count(),
@@ -63,6 +63,23 @@ class NotificationsController extends Controller
 
         } catch (ValidationException $e) {
             return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
+        }
+    }
+
+    public function mark(Request $request)
+    {
+        try{
+            $markAsRead = Notifications::where([
+                'alici_id' => $request->user()->ID,
+                'okundu' => 0
+            ])->update([
+                'okundu' => 1
+            ]);
+
+            return Res::success(200, 'notifications', 'success');
+
         } catch (Exception $e) {
             return Res::fail($e->getCode(), $e->getMessage());
         }
