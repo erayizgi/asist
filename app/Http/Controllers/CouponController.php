@@ -317,7 +317,7 @@ class CouponController extends Controller
                                 $type = $type[0];
                                 $oddType = DB::table('odd_types')->where('odd_type_code', $type);
                                 if ($oddType) {
-                                    $oddType = $oddType->row();
+                                    $oddType = $oddType->first();
                                     if ($oddType->odd_type_code == "GS") {
                                         if ($opt[1] == "p") {
                                             $option = $opt[0] . "+" . " Gol";

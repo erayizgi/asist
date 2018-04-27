@@ -18,7 +18,7 @@ Route::prefix("home")->group(function () {
 });
 
 Route::prefix('users')->group(function () {
-    Route::get("/tippers", "UserController@tippers")->middleware("auth:api");
+    Route::get("/tippers", "UserController@tippers");
     Route::get("/me", "UserController@me")->middleware('auth:api');
     Route::get("/me/statistics", "UserController@statistics")->middleware('auth:api');
     Route::get("/activities", "ActivityController@getActivities")->middleware("auth:api");
