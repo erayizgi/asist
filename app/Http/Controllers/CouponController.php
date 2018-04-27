@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 
+use App\Follow;
+use App\Notifications;
+use App\Points;
 use App\Posts;
+use Carbon\Carbon;
 use DB;
 use DateTime;
 use Exception;

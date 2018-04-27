@@ -22,16 +22,17 @@ Route::prefix('users')->group(function () {
     Route::get("/me", "UserController@me")->middleware('auth:api');
     Route::get("/me/statistics", "UserController@statistics")->middleware('auth:api');
     Route::get("/activities", "ActivityController@getActivities")->middleware("auth:api");
-    Route::get("/", "UserController@getUsers")->middleware('auth:api');
-    Route::get("/search/{username}", "UserController@searchUser");
-    Route::get("/{username}", "UserController@getUser");
-    Route::patch("/", "UserController@patch")->middleware('auth:api');
-    Route::patch("/image", "UserController@image")->middleware('auth:api');
-    Route::patch("/reset", "UserController@reset")->middleware('auth:api');
-    Route::post("/forgot", "UserController@forgot")->middleware('auth:api');
-    Route::get("{username}/following", "UserController@following");
-    Route::get("{username}/followers", "UserController@followers");
-    Route::post("/", "UserController@post");
+	Route::get("/balance","UserController@balance")->middleware("auth:api");
+	Route::get("/", "UserController@getUsers")->middleware('auth:api');
+	Route::get("/search/{username}", "UserController@searchUser");
+	Route::get("/{username}", "UserController@getUser");
+	Route::patch("/", "UserController@patch")->middleware('auth:api');
+	Route::patch("/image", "UserController@image")->middleware('auth:api');
+	Route::patch("/reset", "UserController@reset")->middleware('auth:api');
+	Route::post("/forgot", "UserController@forgot")->middleware('auth:api');
+	Route::get("{username}/following", "UserController@following");
+	Route::get("{username}/followers", "UserController@followers");
+	Route::post("/", "UserController@post");
 
 });
 

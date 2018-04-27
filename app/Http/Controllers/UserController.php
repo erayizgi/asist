@@ -105,7 +105,7 @@ class UserController extends Controller
     {
         try {
             $query = TReq::multiple($request, User::class);
-                        $result = [
+            $result = [
                 'metadata' => [
                     'count' => 1,
                     'offset' => $query['offset'],
@@ -127,6 +127,18 @@ class UserController extends Controller
         }
     }
 
+	public function balance(Request $request)
+	{
+		try{
+			$balance = DB::table('tb_points')->where(['user_id' => $request->user()->ID])->sum('amount');
+			$result = [
+				'balance' => $balance
+			];
+			return Res::success(200,"Balance",$result);
+		}catch (Exception $e){
+			return Res::fail($e->getCode(),$e->getMessage());
+		}
+    }
     public function getUsers(Request $request)
     {
         try {
