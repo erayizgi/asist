@@ -20,7 +20,7 @@ class UserController extends Controller
     public function tippers(Request $request){
         try{
             $query = Treq::multiple($request, User::class);
-            $data  = $query['query']->select('ID', 'IMG', 'adSoyad', 'kullaniciAdi')->where(['kullaniciYetki' => 1, 'kayitDurumu' => 1])->get();
+            $data  = $query['query']->where(['kullaniciYetki' => 1, 'kayitDurumu' => 1])->get();
 
             $result = [
                 'metadata' => [
