@@ -10,11 +10,12 @@ use Illuminate\Http\Request;
 
 class SlidersController extends Controller
 {
-    public function nav(Request $request){
+    public function nav(Request $request, $category){
         try{
             $query = Treq::multiple($request, Sliders::class);
             $data  = $query['query']->select('*')->where([
-                'position' => 1
+                'position' => 1,
+                'category' => $category
             ])->get();
 
             $result = [

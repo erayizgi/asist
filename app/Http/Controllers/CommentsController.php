@@ -100,7 +100,7 @@ class CommentsController extends Controller
             ]);
 
             if ($validator->fails()) {
-                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
+                throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
             }
 
             $update = Comments::where([
@@ -116,8 +116,8 @@ class CommentsController extends Controller
 
             return res::success(200, 'comment', 'success');
 
-        } catch (ValidationException $e){
-            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
+        } catch (ValidationException $e) {
+            return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
         } catch (Exception $e) {
             return Res::fail($e->getCode(), $e->getMessage());
         }

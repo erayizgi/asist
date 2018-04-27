@@ -87,7 +87,7 @@ Route::prefix("notifications")->group(function () {
 });
 
 Route::prefix("sliders")->group(function () {
-    Route::get("/nav", "SlidersController@nav");
+    Route::get("/nav/{category}", "SlidersController@nav");
     Route::get("/video", "SlidersController@video");
     Route::get("/header", "SlidersController@header");
 });
@@ -121,6 +121,7 @@ Route::prefix("coupon")->group(function () {
     Route::get("/basketball", "CouponController@basketball");
     Route::get("/events", "CouponController@events");
     Route::get("/odds/{event_id}", "CouponController@odds");
+    Route::post("/send", "CouponController@send")->middleware("auth:api");
 });
 
 Route::prefix("pages")->group(function () {
