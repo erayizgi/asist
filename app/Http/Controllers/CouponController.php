@@ -588,21 +588,34 @@ class CouponController extends Controller
 		try {
 			$now = new DateTime();
 			$today = $now->getTimestamp();
-			$tomorrow = $now->modify('+1 Day')->getTimestamp();
 
 			$query = TReq::multiple($request, Events::class);
-			$data = $query['query']->where('start_date', '>=', $today)->where('start_date', '<=', $tomorrow)->get();
+			$data = $query['query']->where('start_date', '>=', $today)->orderBy("start_date", "ASC")->get();
 
+			$dates = DB::table("events")->distinct()->select(DB::raw("FROM_UNIXTIME(`start_date`,'%d-%m-%Y') AS 'date_formatted'"))
+				->where("start_date", ">=", $today)
+				->orderBy("start_date", "ASC")
+//				->groupBy("date_formatted")
+				->pluck("date_formatted")
+				->all();
+			$leagues = DB::table("events")->distinct()->select("league_name","league_code")
+				->where("start_date", ">=", $today)
+				->orderBy("league_name", "ASC")
+				->get();
 			$result = [
 				'metadata' => [
 					'count' => $data->count(),
 					'offset' => $query['offset'],
 					'limit' => $query['limit'],
-				], 'data' => $data
+				],
+				'data' => $data,
+				"dates" => $dates,
+				"leagues" => $leagues
 			];
 			foreach ($data as $k => $v) {
 				$time = new DateTime();
 				$time->setTimestamp($data[$k]->start_date);
+				$data[$k]->start_day = $time->format("Y-m-d");
 				$data[$k]->start_date = $time->format("H:i");
 			}
 			return Res::success(200, 'Maçlar', $result);
@@ -685,16 +698,16 @@ class CouponController extends Controller
 			$createdCoupon = Coupon::create([
 				"kupon_sahibi" => $request->user()->ID,
 				"kupon_sonucu" => "DEVAMEDIYOR",
-				"misli" => $coupon["misli"]*-1,
+				"misli" => $coupon["misli"],
 				"aciklama" => $aciklama,
 				"paylasilma_tarihi" => Carbon::now()->format("Y-m-d H:i:s"),
 				"kazanc" => $kazanc
 			]);
 			if ($createdCoupon) {
 				Points::create([
-					'user_id'        => $request->user()->ID,
-					'amount'         => $coupon["misli"],
-					'operation_id'   => $createdCoupon->kupon_id,
+					'user_id' => $request->user()->ID,
+					'amount' => $coupon["misli"] * -1,
+					'operation_id' => $createdCoupon->kupon_id,
 					'operation_type' => "KUPON",
 				]);
 				foreach ($couponEvents as $k => $v) {
@@ -706,13 +719,13 @@ class CouponController extends Controller
 					'kullanici_id' => $createdCoupon->kupon_sahibi,
 					'paylasim_tipi' => 2
 				]);
-				$followers = Follow::select("takipEdenID")->where("takipEdilenID",$createdCoupon->kupon_sahibi)->get();
-				$noti  = [];
-				foreach($followers as $f){
+				$followers = Follow::select("takipEdenID")->where("takipEdilenID", $createdCoupon->kupon_sahibi)->get();
+				$noti = [];
+				foreach ($followers as $f) {
 					$noti[] = [
 						"alici_id" => $f->takipEdenID,
 						"bildirim_tipi" => 'kupon',
-						"bildirim_url" => $request->user()->kullaniciAdi."/posts/".$post->paylasim_id,
+						"bildirim_url" => $request->user()->kullaniciAdi . "/posts/" . $post->paylasim_id,
 						"olusturan_id" => $request->user()->ID
 					];
 				}
