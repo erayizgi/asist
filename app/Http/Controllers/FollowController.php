@@ -20,10 +20,25 @@ class FollowController extends Controller
             $validator = Validator::make($request->all(), [
                'kullanici_id' => "required"
             ]);
+
             if($validator->fails()){
                 throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
             }
-            $user = User::where("kullaniciAdi",$request->kullanici_id)->first();
+
+			$user = User::where("kullaniciAdi",$request->kullanici_id)->first();
+
+			if($request->user()->ID === $user->ID){
+				throw new Exception('Kendi Kendinizi Takip Edemezsiniz!', Response::HTTP_FORBIDDEN);
+			}
+
+            $check = Follow::where([
+            	'takipEdenID' => $request->user()->ID,
+				'takipEdilenID' => $user->ID
+			])->count();
+
+            if($check > 0){
+            	throw new Exception('Seçmiş Olduğunuz Kullanıcı Takip Ediyorsunuz', Response::HTTP_BAD_REQUEST);
+			}
 
             $follow = Follow::insert([
                 'takipEdenID'   => $request->user()->ID,
@@ -35,7 +50,6 @@ class FollowController extends Controller
             }
 
             return Res::success(200,'follow', 'success');
-
 
         } catch (ValidationException $e){
             return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
