@@ -16,125 +16,129 @@ use Illuminate\Validation\ValidationException;
 
 class CommentsController extends Controller
 {
-    public function select(Request $request, $post)
-    {
-        try {
-            $query = TReq::multiple($request, Comments::class);
-            $data = $query["query"]
-                ->select(
-                    'tb_paylasim_yorumlari.*',
-                    'tb_paylasim_yorumlari.created_at as yorum_yapilan_tarih',
-                    'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
-                ->where('paylasim_id', $post)
-                ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id");
-            $result = [
-                'metadata' => [
-                    'count' => $data->count(),
-                    'offset' => $query['offset'],
-                    'limit' => $query['limit'],
-                ],
-                'data' => $data->get()
-            ];
+	public function select(Request $request, $post)
+	{
+		try {
+			$query = TReq::multiple($request, Comments::class);
+			$data = $query["query"]
+				->select(
+					'tb_paylasim_yorumlari.*',
+					'tb_paylasim_yorumlari.created_at as yorum_yapilan_tarih',
+					'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
+				->where('paylasim_id', $post)
+				->where('ust_id', 0)
+				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id");
+			$result = [
+				'metadata' => [
+					'count' => $data->count(),
+					'offset' => $query['offset'],
+					'limit' => $query['limit'],
+				],
+				'data' => $data->get()
+			];
 
-            return Res::success(200, 'Users', $result);
-        } catch (Exception $e) {
-            return Res::fail($e->getCode(), $e->getMessage());
-        }
-    }
+			return Res::success(200, 'Users', $result);
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
 
-    public function create(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'yorum' => 'required|filled',
-                'icerik_tipi' => 'required|filled',
-                'paylasim_id' => 'required|filled',
-            ]);
+	public function create(Request $request)
+	{
+		try {
+			$validator = Validator::make($request->all(), [
+				'yorum' => 'required|filled',
+				'icerik_tipi' => 'required|filled',
+				'paylasim_id' => 'required|filled',
+			]);
 
-            if ($validator->fails()) {
-                throw new ValidationException($validator,Response::HTTP_BAD_REQUEST,$validator->errors());
-            }
+			if ($validator->fails()) {
+				throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
+			}
 
-            $create = Comments::create([
-                'yorum' => $request->yorum,
-                'kullanici_id' => $request->user()->ID,
-                'paylasim_id' => $request->paylasim_id,
-                'icerik_tipi' => $request->icerik_tipi, // post yorumu için 1 haber yorumu için 2
-            ]);
-            $comment = Comments::select(
-                "tb_paylasim_yorumlari.yorum",
-                "tb_paylasim_yorumlari.created_at as yorum_tarihi",
-                "tb_kullanicilar.IMG",
-                "tb_kullanicilar.adSoyad",
-                "tb_kullanicilar.kullaniciAdi"
-            )
-                ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id")
-                ->where("tb_paylasim_yorumlari.yorum_id", $create->yorum_id)
-                ->first();
-            Activities::create([
-                "kullanici_id" => $create->kullanici_id,
-                "islem_turu" => "comment",
-                "islem_id" => $create->yorum_id,
-                "islem_tarihi" => date("Y-m-d H:i:s"),
-            ]);
 
-            if (!$create) {
-                throw new Exception($validator->errors(), Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+			$create = Comments::create([
+				'yorum' => $request->yorum,
+				'kullanici_id' => $request->user()->ID,
+				'paylasim_id' => $request->paylasim_id,
+				'ust_id' => $request->ust,
+				'icerik_tipi' => $request->icerik_tipi, // post yorumu için 1 haber yorumu için 2
+			]);
+			$comment = Comments::select(
+				"tb_paylasim_yorumlari.yorum",
+				"tb_paylasim_yorumlari.created_at as yorum_tarihi",
+				"tb_paylasim_yorumlari.yorum_id",
+				"tb_kullanicilar.IMG",
+				"tb_kullanicilar.adSoyad",
+				"tb_kullanicilar.kullaniciAdi"
+			)
+				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id")
+				->where("tb_paylasim_yorumlari.yorum_id", $create->yorum_id)
+				->first();
+			Activities::create([
+				"kullanici_id" => $create->kullanici_id,
+				"islem_turu" => "comment",
+				"islem_id" => $create->yorum_id,
+				"islem_tarihi" => date("Y-m-d H:i:s"),
+			]);
 
-            return Res::success(200, 'comments', $comment);
+			if (!$create) {
+				throw new Exception($validator->errors(), Response::HTTP_INTERNAL_SERVER_ERROR);
+			}
 
-        } catch (ValidationException $e){
-            return Res::fail($e->getResponse(),$e->getMessage(),$e->errors());
-        } catch (Exception $e) {
-            return Res::fail($e->getCode(), $e->getMessage());
-        }
-    }
+			return Res::success(200, 'comments', $comment);
 
-    public function update(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'yorum' => 'required|filled',
-                'yorum_id' => 'required|filled',
-            ]);
+		} catch (ValidationException $e) {
+			return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
 
-            if ($validator->fails()) {
-                throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
-            }
+	public function update(Request $request)
+	{
+		try {
+			$validator = Validator::make($request->all(), [
+				'yorum' => 'required|filled',
+				'yorum_id' => 'required|filled',
+			]);
 
-            $update = Comments::where([
-                'yorum_id' => $request->yorum_id,
-                'kullanici_id' => $request->user()->ID,
-            ])->update([
-                'yorum' => $request->yorum
-            ]);
+			if ($validator->fails()) {
+				throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
+			}
 
-            if (!$update) {
-                throw new Exception('update error', Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+			$update = Comments::where([
+				'yorum_id' => $request->yorum_id,
+				'kullanici_id' => $request->user()->ID,
+			])->update([
+				'yorum' => $request->yorum
+			]);
 
-            return res::success(200, 'comment', 'success');
+			if (!$update) {
+				throw new Exception('update error', Response::HTTP_INTERNAL_SERVER_ERROR);
+			}
 
-        } catch (ValidationException $e) {
-            return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
-        } catch (Exception $e) {
-            return Res::fail($e->getCode(), $e->getMessage());
-        }
-    }
+			return res::success(200, 'comment', 'success');
 
-    public function delete(Request $request,$yorum_id)
-    {
-        try {
+		} catch (ValidationException $e) {
+			return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
 
-            if (!Comments::where(['kullanici_id' => $request->user()->ID, 'yorum_id' => $yorum_id])->delete()) {
-                throw new Exception('an error', Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+	public function delete(Request $request, $yorum_id)
+	{
+		try {
 
-            return Res::success(200, 'success', 'success');
+			if (!Comments::where(['kullanici_id' => $request->user()->ID, 'yorum_id' => $yorum_id])->delete()) {
+				throw new Exception('an error', Response::HTTP_INTERNAL_SERVER_ERROR);
+			}
 
-        } catch (Exception $e) {
-                return Res::fail($e->getCode(), $e->getMessage());
-        }
-    }
+			return Res::success(200, 'success', 'success');
+
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
 }

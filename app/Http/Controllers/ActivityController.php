@@ -18,7 +18,7 @@ class ActivityController extends Controller
                 ->join("tb_takip", "tb_takip.takipEdilenID", "islemler.kullanici_id", "inner")
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "islemler.kullanici_id", "inner")
                 ->where("tb_takip.takipEdenID", $request->user()->ID)
-	            ->get();
+				/*->orWhere("islemler.kullanici_id", $request->user()->ID)*/->get();
             return Res::success(200, 'Activity', $data);
         } catch (\Exception $e) {
             $error = new \stdClass();

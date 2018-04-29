@@ -9,6 +9,7 @@ use App\User;
 use Carbon\Carbon;
 use DB;
 use App\Coupon;
+use App\Events;
 use App\Follow;
 use App\Games;
 use App\Posts;
@@ -201,29 +202,28 @@ class PostsController extends Controller
         }
     }
 
-    public function getFeedOfUser(Request $request, $username)
-    {
-        try {
-            $user = User::where("kullaniciAdi", $username)->first();
-            $query = TReq::multiple($request, Posts::class);
-            $data = $query["query"]
-                ->select(
-                    'tb_paylasimlar.created_at AS post_created_at',
-                    'tb_paylasimlar.paylasim_id AS post_id',
-                    'tb_paylasimlar.*',
-                    'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
-                ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasimlar.kullanici_id")
-                ->where("tb_paylasimlar.kullanici_id", $user->ID)
-                ->orderBy("post_created_at", "DESC");
-//            return $data->toSql();
-            $result = [
-                'metadata' => [
-                    'count' => $data->count(),
-                    'offset' => $query['offset'],
-                    'limit' => $query['limit'],
-                ],
-                'data' => $data->get()
-            ];
+	public function getFeedOfUser(Request $request, $username)
+	{
+		try {
+			$user = User::where("kullaniciAdi", $username)->first();
+			$query = TReq::multiple($request, Posts::class);
+			$data = $query["query"]
+				->select(
+					'tb_paylasimlar.created_at AS post_created_at',
+					'tb_paylasimlar.paylasim_id AS post_id',
+					'tb_paylasimlar.*',
+					'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
+				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasimlar.kullanici_id")
+				->where("tb_paylasimlar.kullanici_id", $user->ID)
+				->orderBy("post_created_at", "DESC");
+			$result = [
+				'metadata' => [
+					'count' => $data->count(),
+					'offset' => $query['offset'],
+					'limit' => $query['limit'],
+				],
+				'data' => $data->get()
+			];
 
             return Res::success(200, 'Feed', $result);
         } catch (Exception $e) {
@@ -275,4 +275,49 @@ class PostsController extends Controller
             return Res::fail($e->getCode(), $e->getMessage());
         }
     }
+
+	public function delete(Request $request, $post_id)
+	{
+
+		try {
+
+			$post_type = Posts::where([
+				'paylasim_id' => $request->post_id,
+				'kullanici_id' => $request->user()->ID
+			])->first();
+
+			if (!$post_type) {
+				throw new Exception('Böyle Bir Paylaşım Bulunamadı!', Response::HTTP_NOT_FOUND);
+			}
+
+			if ($post_type->paylasim_tipi == 2) {
+
+				// Maçlar
+				$check = Games::where('kupon_id', $post_type->durum)->where('mac_tarihi', '<=', Carbon::now()->format('Y-m-d H:i:s'))->count();
+
+				if ($check > 0) {
+					throw new Exception('Yapmış Olduğunuz Kuponda Başlayan Maç Olduğundan Paylaşımı Silemezsiniz!', Response::HTTP_FORBIDDEN);
+				} else {
+					// Delete from games
+					$game = Games::where('kupon_id', $post_type->durum)->delete();
+				}
+			}
+
+			// Delete from post comments
+			$comment = Comments::where('paylasim_id', $request->post_id)->delete();
+
+			// Detele from likes
+			$like = Likes::where('paylasim_id', $request->post_id)->delete();
+
+			// Delete from activity
+			$activity = Activities::where('islem_id', $request->post_id)->delete();
+
+			$post_type->delete();
+
+			return Res::success(200, "Seçmiş Olduğunuz Paylaşım Başarılı Bir Şekilde Silindi!", Response::HTTP_OK);
+
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
 }

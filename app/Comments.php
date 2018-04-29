@@ -12,7 +12,7 @@ class Comments extends Model
 	protected $table = "tb_paylasim_yorumlari";
 	protected $primaryKey = "yorum_id";
 	protected $dates = ['deleted_at'];
-	protected $fillable = ['kullanici_id', 'paylasim_id', 'icerik_tipi', 'yorum'];
+	protected $fillable = ['kullanici_id', 'ust_id' , 'paylasim_id', 'icerik_tipi', 'yorum'];
 	public $appends = ["yorum_yanit"];
 
 	public function getYorumYanitAttribute()

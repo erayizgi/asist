@@ -29,7 +29,7 @@ Route::prefix('users')->group(function () {
 	Route::patch("/", "UserController@patch")->middleware('auth:api');
 	Route::patch("/image", "UserController@image")->middleware('auth:api');
 	Route::patch("/reset", "UserController@reset")->middleware('auth:api');
-	Route::post("/forgot", "UserController@forgot")->middleware('auth:api');
+	Route::post("/forgot", "UserController@forgot");
 	Route::get("{username}/following", "UserController@following");
 	Route::get("{username}/followers", "UserController@followers");
 	Route::post("/", "UserController@post");
@@ -71,6 +71,8 @@ Route::prefix("posts")->group(function () {
     //Route::get("/feed", "PostsController@myFeed")->middleware("auth:api");
     Route::get("/couponDetail/{coupon_id}", "PostsController@couponGames")->middleware("auth:api");
     Route::get("/couponStatus/{coupon_id}", "PostsController@couponStatus");
+
+    Route::delete("/delete/{post_id}", "PostsController@delete")->middleware("auth:api");
 
 });
 
@@ -123,6 +125,7 @@ Route::prefix("coupon")->group(function () {
     Route::get("/events", "CouponController@events");
     Route::get("/odds/{event_id}", "CouponController@odds");
     Route::post("/send", "CouponController@send")->middleware("auth:api");
+
 });
 
 Route::prefix("pages")->group(function () {
