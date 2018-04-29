@@ -26,12 +26,8 @@ class ForecastController extends Controller
 	public function forecast(Request $request)
 	{
 		try {
-			$query = Treq::multiple($request, Forecast::class);
-			$data = $query['query']
-				->select('events.event_id', 'events.home', 'events.away', 'events.league_code', 'events.league_name', 'events.event_oid', 'events.identifier_id')
-				->join('events', 'tb_iddaa_tahminleri.mac_id', 'events.identifier_id')
-				->groupBy('events.event_id', 'events.home', 'events.away', 'events.league_code', 'events.league_name', 'tb_iddaa_tahminleri.mac_id', 'events.event_oid', 'events.identifier_id')
-				->orderBy('tb_iddaa_tahminleri.mac_id', 'DESC')->get();
+			$query = Treq::multiple($request, Events::class);
+			$data = $query['query']->orderBy('events.start_date', 'DESC')->get();
 
 			$result = [
 				'metadata' => [

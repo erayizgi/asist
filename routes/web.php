@@ -96,6 +96,7 @@ Route::prefix("sliders")->group(function () {
 });
 
 Route::prefix("forecast")->group(function () {
+	Route::get("/events", "ForecastController@events");
     Route::get("/", "ForecastController@forecast");
     Route::get("/{id}", "ForecastController@detail");
     Route::post("/", "ForecastController@surveys")->middleware("auth:api");
