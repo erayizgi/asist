@@ -17,12 +17,16 @@ class Comments extends Model
 
 	public function getYorumYanitAttribute()
 	{
-		return DB::table("tb_paylasim_yorumlari")->select(
-			'tb_paylasim_yorumlari.*',
-			'tb_paylasim_yorumlari.created_at as yorum_yapilan_tarih',
-			'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
-			->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id")
-			->where("ust_id", $this->attributes["yorum_id"])->get();
+		if(isset($this->attributes["yorum_id"])){
+			return DB::table("tb_paylasim_yorumlari")->select(
+				'tb_paylasim_yorumlari.*',
+				'tb_paylasim_yorumlari.created_at as yorum_yapilan_tarih',
+				'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
+				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id")
+				->where("ust_id", $this->attributes["yorum_id"])->get();
+		}else{
+			return [];
+		}
 
 	}
 }
