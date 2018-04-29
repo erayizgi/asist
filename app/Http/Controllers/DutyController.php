@@ -13,6 +13,7 @@ use App\Libraries\TReq;
 use App\Points;
 use App\Posts;
 use App\UserDuties;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -135,20 +136,21 @@ class DutyController extends Controller
 							->where("kupon_sahibi", $v->kullanici_id);
 						$cp = $coupons->get();
 						$coupons = $coupons->count();
-						if($coupons >= $v->duty->gorev_hedefi){
+						return $coupons;
+						if ($coupons >= $v->duty->gorev_hedefi) {
 							UserDuties::where("kg_id", $v->kg_id)->update(["tamamlandi" => 1]);
-							if($v->duty->odul_islem === "+"){
+							if ($v->duty->odul_islem === "+") {
 								Points::create([
 									'user_id' => $v->kullanici_id,
 									'amount' => $v->duty->odul,
 									'operation_id' => $v->kg_id,
 									'operation_type' => "GOREV_TAMAMLANDI",
 								]);
-							}else{
-								foreach($cp as $c){
+							} else {
+								foreach ($cp as $c) {
 									Points::create([
 										'user_id' => $v->kullanici_id,
-										'amount' => $v->duty->odul*$c->kesinKazanc,
+										'amount' => $v->duty->odul * $c->kesinKazanc,
 										'operation_id' => $v->kg_id,
 										'operation_type' => "GOREV_TAMAMLANDI",
 									]);
@@ -171,7 +173,7 @@ class DutyController extends Controller
 	{
 		try {
 			$query = Treq::multiple($request, DutyGroup::class);
-			$data = $query["query"]->orderBy("created_at", "DESC");
+			$data = $query["query"]->with("duties")->orderBy("created_at", "DESC");
 			$result = [
 				'metadata' => [
 					'count' => $data->count(),
@@ -205,6 +207,54 @@ class DutyController extends Controller
 			];
 			return Res::success(200, 'Duties of Duty Group', $result);
 		} catch (\Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
+
+	public function assignDuty(Request $request, $duty_group_id)
+	{
+		try {
+			$duty = DutyGroup::where("grup_id",$duty_group_id)->first();
+			if (!$duty) {
+				throw new \Exception("Katılmak istediğiniz yarışma bulunamadı", Response::HTTP_NOT_FOUND);
+			}
+			// kullanıcnın içinde bulunduğu bir görev grubu var mı
+			$activeDuty = UserDuties::where("tamamlandi", 0)->where("kullanici_id",$request->user()->ID)->count();
+			if ($activeDuty > 0) {
+				throw new \Exception("Aktif katılımınızın olduğu bir görev grubu bulunmaktadır.", Response::HTTP_FORBIDDEN);
+			}
+			if ($duty->onkosullu_grup != null) {
+				$checkForPreReq = UserDuties::where("grup_id", $duty->onkosullu_grup->grup_id)
+					->where("tamamlandi", 0)
+					->where("kullanici_id",$request->user()->ID)
+					->count();
+				if ($checkForPreReq > 0){
+					throw new \Exception("Bu görev grubuna katılabilmeniz için ön koşulu tamamlamanız gerekmektedir",Response::HTTP_FORBIDDEN);
+				}
+			}
+			$duties = Duty::where("grup_id",$duty_group_id)->get();
+			$userDuty = [];
+			foreach($duties as $d){
+				$userDuty[] = [
+					"grup_id" => $d->grup_id,
+					"gorev_id" => $d->gorev_id,
+					"kullanici_id" => $request->user()->ID,
+					"tamamlandi" => 0
+				];
+			}
+			UserDuties::insert($userDuty);
+			return Res::success(Response::HTTP_CREATED,"Göreve Başarıyla Katıldınız");
+		} catch (\Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
+
+	public function getActiveDutyGroup(Request $request)
+	{
+		try{
+			$find = UserDuties::select("grup_id")->where("kullanici_id",$request->user()->ID)->where("tamamlandi",0)->first();
+			return Res::success(Response::HTTP_OK,"Aktif Görev",$find);
+		}catch (\Exception $e){
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
 	}

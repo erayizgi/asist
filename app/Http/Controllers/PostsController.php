@@ -157,7 +157,8 @@ class PostsController extends Controller
                 "tb_paylasimlar.durum",
                 "tb_paylasimlar.resim",
                 "tb_paylasimlar.paylasim_tipi",
-                "tb_paylasimlar.paylasilan_gonderi"
+                "tb_paylasimlar.paylasilan_gonderi",
+                "tb_paylasimlar.created_at"
             )
                 ->join("tb_paylasimlar", "tb_paylasimlar.paylasim_id", "tb_paylasim_yorumlari.paylasim_id")
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasimlar.kullanici_id")->first();
