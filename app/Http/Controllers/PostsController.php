@@ -215,6 +215,7 @@ class PostsController extends Controller
                 ->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasimlar.kullanici_id")
                 ->where("tb_paylasimlar.kullanici_id", $user->ID)
                 ->orderBy("post_created_at", "DESC");
+//            return $data->toSql();
             $result = [
                 'metadata' => [
                     'count' => $data->count(),

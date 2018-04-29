@@ -281,6 +281,7 @@ class CouponController extends Controller
 
 	public function basketball()
 	{
+		error_reporting(E_ALL ^ E_NOTICE);
 		$client = new \GuzzleHttp\Client();
 
 		$response = $client->request('GET', 'https://www.tuttur.com/draw/events/type/basketball');
@@ -291,7 +292,7 @@ class CouponController extends Controller
 		$result = array("message" => "");
 		foreach ($r as $key => $val) {
 			if ($key >= 100) {
-				$lmt = "*LIMIT*";
+				$lmt = "LIMIT";
 				$event = array(
 					"event_oid" => $r->$key->code,
 					"type" => $r->$key->type,
@@ -305,7 +306,7 @@ class CouponController extends Controller
 					"identifier_id" => $r->$key->identifier,
 					"s1Handicap" => $r->$key->s1Handicap,
 					"f1Handicap" => $r->$key->extraHomeHandicap,
-					"totalLimit" => $r->$key->odds->$lmt
+					"totalLimit" => $r->$key->odds->{'*'.$lmt.'*'}
 				);
 
 				$check = Events::where('identifier_id', $r->$key->identifier)->count();
@@ -321,7 +322,7 @@ class CouponController extends Controller
 								$type = $type[0];
 								$oddType = DB::table('odd_types')->where('odd_type_code', $type);
 								if ($oddType) {
-									$oddType = $oddType->row();
+									$oddType = $oddType->first();
 									if ($oddType->odd_type_code == "GS") {
 										if ($opt[1] == "p") {
 											$option = $opt[0] . "+" . " Gol";
@@ -357,7 +358,7 @@ class CouponController extends Controller
 										"odd_type_id" => $oddType->odd_type_id,
 										"event_id" => $event_id
 									);
-									if (DB::table('odd_options')->insert_odds($odd_option)) {
+									if (DB::table('odd_options')->insert($odd_option)) {
 										$result = array(
 											"status" => FALSE,
 											"message" => $result["message"] . "\n" . $event_id . " ID li maça " . $oddType->odd_type . " " . $option . " Seçeneği Eklendi"

@@ -27,6 +27,7 @@ class TReq
 		$_ar = $request->has('archived') ? $request->archived : false;
 		// If only trashed data requested.
 		$_wh = $request->has("where") ? $request->where : false;
+		$_bw = $request->has("between") ? $request->between: false;
 
 
 		if ($_ln && $_ln > 100) {
@@ -45,6 +46,21 @@ class TReq
 				}
 			}
 
+		}
+		if ($_bw) {
+
+			//?between=tarih||önce|sonra
+			$between = explode(",", $_bw);
+
+			foreach ($between as $bw) {
+				if (strpos($bw, "||")) {
+					$bwx = explode("||",$bw);
+					$bwy = $bwx[0];
+					$val = explode('|', $bwx[1]);
+					$query->where($bwy,">=",$val[0]);
+					$query->where($bwy,"<=",$val[1]);
+				}
+			}
 		}
 		// if order by condition
 		if ($_ob) {
