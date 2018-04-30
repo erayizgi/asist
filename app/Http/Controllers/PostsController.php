@@ -154,6 +154,7 @@ class PostsController extends Controller
                 "tb_kullanicilar.IMG",
                 "tb_kullanicilar.adSoyad",
                 "tb_kullanicilar.kullaniciAdi",
+                "tb_paylasimlar.paylasim_id",
                 "tb_paylasimlar.durum",
                 "tb_paylasimlar.resim",
                 "tb_paylasimlar.paylasim_tipi",

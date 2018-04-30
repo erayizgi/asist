@@ -252,7 +252,8 @@ class DutyController extends Controller
 	public function getActiveDutyGroup(Request $request)
 	{
 		try{
-			$find = UserDuties::select("grup_id")->where("kullanici_id",$request->user()->ID)->where("tamamlandi",0)->first();
+			$find = UserDuties::select("grup_id")->where("kullanici_id",$request->user()->ID)->where("tamamlandi",0)->toSql();
+
 			return Res::success(Response::HTTP_OK,"Aktif Görev",$find);
 		}catch (\Exception $e){
 			return Res::fail($e->getCode(), $e->getMessage());
