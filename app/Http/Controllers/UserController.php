@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Follow;
+use App\Points;
 use DB;
 use App\User;
+
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -231,6 +233,58 @@ class UserController extends Controller
 
 	public function post(Request $request)
 	{
+		try{
+
+			$validator = Validator::make($request->all(), [
+				'kullaniciAdi' => 'required|filled|unique:tb_kullanicilar,kullaniciAdi',
+				'password' => 'required|filled|min:3',
+				'adSoyad' => 'required|filled|min:3',
+				'email' => 'required|filled|unique:tb_kullanicilar,email',
+				'kullaniciTelefon' => 'required|filled|unique:tb_kullanicilar,kullaniciTelefon',
+				'kullaniciBulunduguUlke' => 'required|filled|min:3',
+				'kullaniciBulunduguSehir' => 'required|filled|min:3'
+			]);
+
+			if($validator->fails()){
+				throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
+			}
+
+			$data = $request->only(['kullaniciAdi', 'password', 'adSoyad', 'email', 'kullaniciTelefon', 'kullaniciBulunduguUlke', 'kullaniciBulunduguSehir']);
+			$data['password'] = bcrypt($data['password']);
+
+			$user = User::create($data)->ID;
+
+			$follow = DB::table('otomatik_takip')->get();
+
+
+			$follower = [];
+
+			foreach($follow as $k => $v){
+				$follower[] = [
+					'takipEdenID' => $user,
+					'takipEdilenID' => $follow[$k]->otakip_edilen
+				];
+			}
+
+			$point = Points::create([
+				'user_id' => $user,
+				'amount' => 50,
+				'operation_type' => 'KAYIT',
+				'operation_id' => 0
+			]);
+
+			$auto = Follow::insert($follower);
+
+			return Res::success(200, 'Users', 'Kullanıcı Kaydı Başarılı Bir Şekilde Oluşturuldu!');
+
+		} catch (ValidationException $e) {
+			return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+
+
+		/*
 		try {
 			$validator = Validator::make($request->all(), [
 				'kullaniciAdi' => 'required|filled|unique:tb_kullanicilar,kullaniciAdi',
@@ -256,7 +310,7 @@ class UserController extends Controller
 			return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
 		} catch (Exception $e) {
 			return Res::fail($e->getCode(), $e->getMessage());
-		}
+		}*/
 	}
 
 	public function image(Request $request)
