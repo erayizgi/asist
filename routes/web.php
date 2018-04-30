@@ -17,6 +17,9 @@ Route::prefix("home")->group(function () {
     Route::get("/population", "HomeController@population");
 });
 
+
+Route::post("contact", "ContactController@index");
+
 Route::prefix('users')->group(function () {
     Route::get("/tippers", "UserController@tippers");
     Route::get("/me", "UserController@me")->middleware('auth:api');
