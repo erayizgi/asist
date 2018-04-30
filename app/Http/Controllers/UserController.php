@@ -24,7 +24,10 @@ class UserController extends Controller
 	{
 		try {
 			$query = Treq::multiple($request, User::class);
-			$data = $query['query']->select('ID', 'IMG', 'adSoyad', 'kullaniciAdi', 'kullaniciHakkinda')->where(['kullaniciYetki' => 1, 'kayitDurumu' => 1])->get();
+			$data = $query['query']
+				->select('ID', 'IMG', 'adSoyad', 'kullaniciAdi', 'kullaniciHakkinda')
+				->where(['kayitDurumu' => 1])
+				->inRandomOrder()->get();
 
 			$tippers = [];
 

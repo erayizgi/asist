@@ -13,7 +13,7 @@ class Conversation extends Model
     protected $primaryKey = "conversation_id";
     protected $dates = ['deleted_at'];
     protected $fillable = ['sender_id', 'receiver_id'];
-    protected $appends = ["sender"];
+    protected $appends = ["sender", "receiver"];
 
     public function getSenderAttribute()
     {
@@ -22,4 +22,12 @@ class Conversation extends Model
             ->select('tb_kullanicilar.IMG','tb_kullanicilar.adSoyad','tb_kullanicilar.IMG','tb_kullanicilar.kullaniciAdi')->first();
         return  $roles;
     }
+
+	public function getReceiverAttribute()
+	{
+		$roles = DB::table('tb_kullanicilar')
+			->where('ID',$this->attributes['receiver_id'])
+			->select('tb_kullanicilar.IMG','tb_kullanicilar.adSoyad','tb_kullanicilar.IMG','tb_kullanicilar.kullaniciAdi')->first();
+		return  $roles;
+	}
 }
