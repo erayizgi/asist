@@ -136,7 +136,6 @@ class DutyController extends Controller
 							->where("kupon_sahibi", $v->kullanici_id);
 						$cp = $coupons->get();
 						$coupons = $coupons->count();
-						return $coupons;
 						if ($coupons >= $v->duty->gorev_hedefi) {
 							UserDuties::where("kg_id", $v->kg_id)->update(["tamamlandi" => 1]);
 							if ($v->duty->odul_islem === "+") {
@@ -214,27 +213,27 @@ class DutyController extends Controller
 	public function assignDuty(Request $request, $duty_group_id)
 	{
 		try {
-			$duty = DutyGroup::where("grup_id",$duty_group_id)->first();
+			$duty = DutyGroup::where("grup_id", $duty_group_id)->first();
 			if (!$duty) {
 				throw new \Exception("Katılmak istediğiniz yarışma bulunamadı", Response::HTTP_NOT_FOUND);
 			}
 			// kullanıcnın içinde bulunduğu bir görev grubu var mı
-			$activeDuty = UserDuties::where("tamamlandi", 0)->where("kullanici_id",$request->user()->ID)->count();
+			$activeDuty = UserDuties::where("tamamlandi", 0)->where("kullanici_id", $request->user()->ID)->count();
 			if ($activeDuty > 0) {
 				throw new \Exception("Aktif katılımınızın olduğu bir görev grubu bulunmaktadır.", Response::HTTP_FORBIDDEN);
 			}
 			if ($duty->onkosullu_grup != null) {
 				$checkForPreReq = UserDuties::where("grup_id", $duty->onkosullu_grup->grup_id)
 					->where("tamamlandi", 0)
-					->where("kullanici_id",$request->user()->ID)
+					->where("kullanici_id", $request->user()->ID)
 					->count();
-				if ($checkForPreReq > 0){
-					throw new \Exception("Bu görev grubuna katılabilmeniz için ön koşulu tamamlamanız gerekmektedir",Response::HTTP_FORBIDDEN);
+				if ($checkForPreReq > 0) {
+					throw new \Exception("Bu görev grubuna katılabilmeniz için ön koşulu tamamlamanız gerekmektedir", Response::HTTP_FORBIDDEN);
 				}
 			}
-			$duties = Duty::where("grup_id",$duty_group_id)->get();
+			$duties = Duty::where("grup_id", $duty_group_id)->get();
 			$userDuty = [];
-			foreach($duties as $d){
+			foreach ($duties as $d) {
 				$userDuty[] = [
 					"grup_id" => $d->grup_id,
 					"gorev_id" => $d->gorev_id,
@@ -243,7 +242,7 @@ class DutyController extends Controller
 				];
 			}
 			UserDuties::insert($userDuty);
-			return Res::success(Response::HTTP_CREATED,"Göreve Başarıyla Katıldınız");
+			return Res::success(Response::HTTP_CREATED, "Göreve Başarıyla Katıldınız");
 		} catch (\Exception $e) {
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
@@ -251,11 +250,24 @@ class DutyController extends Controller
 
 	public function getActiveDutyGroup(Request $request)
 	{
-		try{
-			$find = UserDuties::select("grup_id")->where("kullanici_id",$request->user()->ID)->where("tamamlandi",0)->toSql();
+		try {
+			$find = UserDuties::select("grup_id")->where("kullanici_id", $request->user()->ID)->where("tamamlandi", 0)->first();
 
-			return Res::success(Response::HTTP_OK,"Aktif Görev",$find);
-		}catch (\Exception $e){
+			return Res::success(Response::HTTP_OK, "Aktif Görev", $find);
+		} catch (\Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
+
+	public function userDuties(Request $request, $grup_id)
+	{
+		try {
+			$find = UserDuties::where("kullanici_id", $request->user()->ID)
+				->where("grup_id", $grup_id)
+				->with("duty")
+				->get();
+			return Res::success(Response::HTTP_OK, "Aktif Görev", $find);
+		} catch (\Exception $e) {
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
 	}

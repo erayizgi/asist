@@ -142,6 +142,7 @@ Route::post("/follow", "FollowController@follow")->middleware("auth:api");
 Route::post("/unfollow", "FollowController@unfollow")->middleware("auth:api");
 Route::prefix("duty")->group(function(){
 	Route::get("/groups","DutyController@dutyGroups");
+	Route::get("/{group_id}/missions","DutyController@userDuties")->middleware("auth:api");
 	Route::get("/{group_id}/duties","DutyController@duties");
 	Route::post("/{group_id}/assign","DutyController@assignDuty")->middleware("auth:api");
 	Route::get("/active","DutyController@getActiveDutyGroup")->middleware("auth:api");
