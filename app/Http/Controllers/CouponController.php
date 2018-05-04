@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Activities;
 use App\Follow;
 use App\Notifications;
 use App\Points;
@@ -730,7 +731,12 @@ class CouponController extends Controller
 						"olusturan_id" => $request->user()->ID
 					];
 				}
-
+				Activities::create([
+					"kullanici_id" => $request->user()->ID,
+					"islem_turu" => "kupon",
+					"islem_id" => $post->paylasim_id,
+					"islem_tarihi" => Carbon::now()->format("Y-m-d H:i:s")
+				]);
 				if (!Notifications::insert($noti)) {
 					throw new Exception('notification errors', Response::HTTP_INTERNAL_SERVER_ERROR);
 				}

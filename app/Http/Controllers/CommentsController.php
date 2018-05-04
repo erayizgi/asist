@@ -26,7 +26,7 @@ class CommentsController extends Controller
 					'tb_paylasim_yorumlari.created_at as yorum_yapilan_tarih',
 					'tb_kullanicilar.adSoyad', 'tb_kullanicilar.IMG', 'tb_kullanicilar.kullaniciAdi')
 				->where('paylasim_id', $post)
-				->where('ust_id', 0)
+				->whereRaw(DB::raw("(ust_id IS NULL OR ust_id=0)"))
 				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_paylasim_yorumlari.kullanici_id");
 			$result = [
 				'metadata' => [
@@ -36,7 +36,6 @@ class CommentsController extends Controller
 				],
 				'data' => $data->get()
 			];
-
 			return Res::success(200, 'Users', $result);
 		} catch (Exception $e) {
 			return Res::fail($e->getCode(), $e->getMessage());
