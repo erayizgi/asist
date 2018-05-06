@@ -26,7 +26,7 @@ class UserController extends Controller
 			$query = Treq::multiple($request, User::class);
 			$data = $query['query']
 				->select('ID', 'IMG', 'adSoyad', 'kullaniciAdi', 'kullaniciHakkinda')
-				->where(['kayitDurumu' => 1])
+				->where(['kayitDurumu' => 1, 'kullaniciYetki' => 1])
 				->inRandomOrder()->get();
 
 			$tippers = [];
@@ -63,22 +63,36 @@ class UserController extends Controller
 		}
 	}
 
-	public function following($username)
+	public function following(Request $request, $username)
 	{
 		try {
 			$user = User::where("kullaniciAdi", $username)->first();
 			if (!$user) {
 				throw new Exception("Kullanıcı bulunamadı", 404);
 			}
-			$following = Follow::where("takipEdenID", $user->ID)
+			$query = Treq::multiple($request, Follow::class);
+			$data = $query['query']->where("takipEdenID", $user->ID)
 				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_takip.takipEdilenID", "inner")
 				->get();
-			return Res::success(200, "Takip edilenler", $following);
+
+			$result = [
+				'metadata' => [
+					'count' => 1,
+					'offset' => $query['offset'],
+					'limit' => $query['limit'],
+				],
+				'data' => $data
+			];
+
+			/*$following = Follow::where("takipEdenID", $user->ID)
+				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_takip.takipEdilenID", "inner")
+				->get();
+			*/
+			return Res::success(200, "Takip edilenler", $result);
 		} catch (Exception $e) {
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
 	}
-
 	public function followers(Request $request, $username)
 	{
 		try {
@@ -86,11 +100,64 @@ class UserController extends Controller
 			if (!$user) {
 				throw new Exception("Kullanıcı bulunamadı", 404);
 			}
-
 			$query = Treq::multiple($request, Follow::class);
 			$data = $query['query']->where("takipEdilenID", $user->ID)
 				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_takip.takipEdenID", "inner")
 				->get();
+			$result = [
+				'metadata' => [
+					'count' => 1,
+					'offset' => $query['offset'],
+					'limit' => $query['limit'],
+				],
+				'data' => $data
+			];
+			return Res::success(200, "Takip edenler", $result);
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+	}
+
+	/*
+	public function following(Request $request, $username)
+	{
+		try {
+
+			$findUser = User::select('kullaniciAdi', 'ID')->where('kullaniciAdi', $username)->first();
+
+			if (!$findUser) {
+				throw new Exception('Böyle Bir Kullanıcı Bulunamadı!', Response::HTTP_BAD_REQUEST);
+			}
+
+			$isFollowing = Follow::select('tb_kullanicilar.ID', 'tb_kullanicilar.IMG', 'tb_kullanicilar.adSoyad', 'tb_kullanicilar.kullaniciHakkinda')
+				->join('tb_kullanicilar', 'tb_kullanicilar.ID', 'tb_takip.takipEdilenID', 'inner')
+				->where("takipEdenID", $findUser->ID)
+				->get();
+
+			return Res::success(200, "Kullanıcını Takip Ettiği Profiller", $isFollowing);
+
+		} catch (Exception $e) {
+			return Res::fail($e->getCode(), $e->getMessage());
+		}
+
+	}
+
+	public function followers(Request $request, $username)
+	{
+		try {
+
+			$findUser = User::select('kullaniciAdi', 'ID')->where('kullaniciAdi', $username)->first();
+
+			if (!$findUser) {
+				throw new Exception('Böyle Bir Kullanıcı Bulunamadı!', Response::HTTP_BAD_REQUEST);
+			}
+
+			$query = Treq::multiple($request, Follow::class);
+			$data = $query['query']->select('tb_kullanicilar.ID', 'tb_kullanicilar.IMG', 'tb_kullanicilar.adSoyad', 'tb_kullanicilar.kullaniciHakkinda')
+				->where("takipEdilenID", $findUser->ID)
+				->join('tb_kullanicilar', 'tb_kullanicilar.ID', 'tb_takip.takipEdenID', 'inner')
+				->get();
+
 
 			$result = [
 				'metadata' => [
@@ -106,6 +173,7 @@ class UserController extends Controller
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
 	}
+	*/
 
 	public function me(Request $request)
 	{
@@ -236,7 +304,7 @@ class UserController extends Controller
 
 	public function post(Request $request)
 	{
-		try{
+		try {
 
 			$validator = Validator::make($request->all(), [
 				'kullaniciAdi' => 'required|filled|unique:tb_kullanicilar,kullaniciAdi',
@@ -244,15 +312,14 @@ class UserController extends Controller
 				'adSoyad' => 'required|filled|min:3',
 				'email' => 'required|filled|unique:tb_kullanicilar,email',
 				'kullaniciTelefon' => 'required|filled|unique:tb_kullanicilar,kullaniciTelefon',
-				'kullaniciBulunduguUlke' => 'required|filled|min:3',
-				'kullaniciBulunduguSehir' => 'required|filled|min:3'
+
 			]);
 
-			if($validator->fails()){
+			if ($validator->fails()) {
 				throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
 			}
 
-			$data = $request->only(['kullaniciAdi', 'password', 'adSoyad', 'email', 'kullaniciTelefon', 'kullaniciBulunduguUlke', 'kullaniciBulunduguSehir']);
+			$data = $request->only(['kullaniciAdi', 'password', 'adSoyad', 'email', 'kullaniciTelefon' ]);
 			$data['password'] = bcrypt($data['password']);
 
 			$user = User::create($data)->ID;
@@ -262,7 +329,7 @@ class UserController extends Controller
 
 			$follower = [];
 
-			foreach($follow as $k => $v){
+			foreach ($follow as $k => $v) {
 				$follower[] = [
 					'takipEdenID' => $user,
 					'takipEdilenID' => $follow[$k]->otakip_edilen

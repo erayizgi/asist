@@ -61,7 +61,7 @@ class PostsController extends Controller
                 array_push($bildirimler, [
                     "alici_id" => $f->takipEdenID,
                     "bildirim_tipi" => $tip,
-                    "bildirim_url" => "notify_url",
+                    "bildirim_url" => $request->user()->kullaniciAdi.'/posts/'.$post->paylasim_id,
                     "olusturan_id" => $request->user()->ID
                 ]);
             }
