@@ -70,16 +70,12 @@ class UserController extends Controller
 			if (!$user) {
 				throw new Exception("Kullanıcı bulunamadı", 404);
 			}
-			$query = Treq::multiple($request, Follow::class);
-			$data = $query['query']->where("takipEdenID", $user->ID)
+			$data = Follow::where("takipEdenID", $user->ID)
 				->join("tb_kullanicilar", "tb_kullanicilar.ID", "tb_takip.takipEdilenID", "inner")
 				->get();
 
 			$result = [
 				'metadata' => [
-					'count' => 1,
-					'offset' => $query['offset'],
-					'limit' => $query['limit'],
 				],
 				'data' => $data
 			];
@@ -93,6 +89,7 @@ class UserController extends Controller
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
 	}
+
 	public function followers(Request $request, $username)
 	{
 		try {
@@ -290,7 +287,13 @@ class UserController extends Controller
 
 			$data = $query['query']->select('IMG', 'kullaniciAdi', 'adSoyad', 'kullaniciHakkinda')
 				->where('kayitDurumu', 1)
-				->where('kullaniciAdi', 'LIKE', '%' . $username . '%')->get();
+				->where(function ($query) use ($username) {
+					$query->where('kullaniciAdi', 'LIKE', '%' . $username . '%')
+						->orWhere('adSoyad', 'LIKE', '%' . $username . '%');
+				})
+				->get();
+//				->toSql();
+//			return $data;
 
 			$result = [
 				'metadata' => [
@@ -324,7 +327,7 @@ class UserController extends Controller
 				throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
 			}
 
-			$data = $request->only(['kullaniciAdi', 'password', 'adSoyad', 'email', 'kullaniciTelefon' ]);
+			$data = $request->only(['kullaniciAdi', 'password', 'adSoyad', 'email', 'kullaniciTelefon']);
 			$data['password'] = bcrypt($data['password']);
 
 			$user = User::create($data)->ID;
