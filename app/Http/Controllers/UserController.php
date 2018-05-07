@@ -286,7 +286,12 @@ class UserController extends Controller
 	{
 		try {
 			$query = TReq::multiple($request, User::class);
-			$data = $query['query']->where('kullaniciAdi', $username)->first();
+			//$data = $query['query']->where('kullaniciAdi', $username)->first();
+
+			$data = $query['query']->select('IMG', 'kullaniciAdi', 'adSoyad', 'kullaniciHakkinda')
+				->where('kayitDurumu', 1)
+				->where('kullaniciAdi', 'LIKE', '%' . $username . '%')->get();
+
 			$result = [
 				'metadata' => [
 					'count' => $data->count(),
