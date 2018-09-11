@@ -1,0 +1,20 @@
+runtime: php
+env: flex
+
+runtime_config:
+  document_root: public
+
+# Ensure we skip ".env", which is only for local development
+skip_files:
+  - .env
+
+env_variables:
+  # Put production environment variables here.
+  APP_LOG: errorlog
+  APP_KEY: base64:DQ4YD+gCcyYr/j+JNR9cR9h9WkOzOFpu0svXamM+uwE=
+  STORAGE_DIR: /tmp
+
+beta_settings:
+    # for Cloud SQL, set this value to the Cloud SQL connection name,
+    # e.g. "project:region:cloudsql-instance"
+    cloud_sql_instances: "asistanaliz-192209:europe-west3:asistanaliz-v2db"

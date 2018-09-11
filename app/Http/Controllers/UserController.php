@@ -63,6 +63,50 @@ class UserController extends Controller
 		}
 	}
 
+    public function getTippersFromId(Request $request, $id)
+    {
+        try {
+            $query = Treq::multiple($request, User::class);
+            $data = $query['query']
+                ->select('ID', 'IMG', 'adSoyad', 'kullaniciAdi', 'kullaniciHakkinda')
+                ->where('ID', $id)
+                ->where('kayitDurumu', 1)
+                ->get();
+
+            $tippers = [];
+
+            foreach ($data as $k => $v) {
+                $tippers[$k] = [
+                    'ID' => $data[$k]['ID'],
+                    'IMG' => $data[$k]['IMG'],
+                    'adSoyad' => $data[$k]['adSoyad'],
+                    'kullaniciAdi' => $data[$k]['kullaniciAdi'],
+                    'kullaniciHakkinda' => $data[$k]['kullaniciHakkinda'],
+                    'followers' => DB::table('tb_takip')->where('takipEdilenID', $data[$k]['ID'])->count(),
+                    'following' => DB::table('tb_takip')->where('takipEdenID', $data[$k]['ID'])->count(),
+                    'coupons' => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data[$k]['ID']])->count(),
+                    'won' => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data[$k]['ID'], 'kupon_sonucu' => 'KAZANDI'])->count(),
+                    'lose' => DB::table('tb_kuponlar')->where(['kupon_sahibi' => $data[$k]['ID'], 'kupon_sonucu' => 'KAYBETTI'])->count(),
+
+                ];
+            }
+
+
+            $result = [
+                'metadata' => [
+                    'count' => 1,
+                    'offset' => $query['offset'],
+                    'limit' => $query['limit'],
+                ],
+                'data' => $tippers
+            ];
+
+            return Res::success(200, 'Tippers', $result);
+        } catch (Exception $e) {
+            return Res::fail($e->getCode(), $e->getMessage());
+        }
+    }
+
 	public function following(Request $request, $username)
 	{
 		try {
@@ -114,63 +158,6 @@ class UserController extends Controller
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
 	}
-
-	/*
-	public function following(Request $request, $username)
-	{
-		try {
-
-			$findUser = User::select('kullaniciAdi', 'ID')->where('kullaniciAdi', $username)->first();
-
-			if (!$findUser) {
-				throw new Exception('Böyle Bir Kullanıcı Bulunamadı!', Response::HTTP_BAD_REQUEST);
-			}
-
-			$isFollowing = Follow::select('tb_kullanicilar.ID', 'tb_kullanicilar.IMG', 'tb_kullanicilar.adSoyad', 'tb_kullanicilar.kullaniciHakkinda')
-				->join('tb_kullanicilar', 'tb_kullanicilar.ID', 'tb_takip.takipEdilenID', 'inner')
-				->where("takipEdenID", $findUser->ID)
-				->get();
-
-			return Res::success(200, "Kullanıcını Takip Ettiği Profiller", $isFollowing);
-
-		} catch (Exception $e) {
-			return Res::fail($e->getCode(), $e->getMessage());
-		}
-
-	}
-
-	public function followers(Request $request, $username)
-	{
-		try {
-
-			$findUser = User::select('kullaniciAdi', 'ID')->where('kullaniciAdi', $username)->first();
-
-			if (!$findUser) {
-				throw new Exception('Böyle Bir Kullanıcı Bulunamadı!', Response::HTTP_BAD_REQUEST);
-			}
-
-			$query = Treq::multiple($request, Follow::class);
-			$data = $query['query']->select('tb_kullanicilar.ID', 'tb_kullanicilar.IMG', 'tb_kullanicilar.adSoyad', 'tb_kullanicilar.kullaniciHakkinda')
-				->where("takipEdilenID", $findUser->ID)
-				->join('tb_kullanicilar', 'tb_kullanicilar.ID', 'tb_takip.takipEdenID', 'inner')
-				->get();
-
-
-			$result = [
-				'metadata' => [
-					'count' => 1,
-					'offset' => $query['offset'],
-					'limit' => $query['limit'],
-				],
-				'data' => $data
-			];
-
-			return Res::success(200, "Takip edenler", $result);
-		} catch (Exception $e) {
-			return Res::fail($e->getCode(), $e->getMessage());
-		}
-	}
-	*/
 
 	public function me(Request $request)
 	{
@@ -360,35 +347,6 @@ class UserController extends Controller
 		} catch (Exception $e) {
 			return Res::fail($e->getCode(), $e->getMessage());
 		}
-
-
-		/*
-		try {
-			$validator = Validator::make($request->all(), [
-				'kullaniciAdi' => 'required|filled|unique:tb_kullanicilar,kullaniciAdi',
-				'password' => 'required|filled|min:3',
-				'adSoyad' => 'required|filled|min:3',
-				'email' => 'required|filled|unique:tb_kullanicilar,email',
-				'kullaniciTelefon' => 'required|filled|unique:tb_kullanicilar,kullaniciTelefon',
-				'kullaniciBulunduguUlke' => 'required|filled|min:3',
-				'kullaniciBulunduguSehir' => 'required|filled|min:3'
-			]);
-
-			if ($validator->fails()) {
-				throw new ValidationException($validator, Response::HTTP_BAD_REQUEST, $validator->errors());
-			}
-			$data = $request->only(['kullaniciAdi', 'password', 'adSoyad', 'email', 'kullaniciTelefon', 'kullaniciBulunduguUlke', 'kullaniciBulunduguSehir']);
-			$data["password"] = bcrypt($data["password"]);
-			if (User::create($data)) {
-				return Res::success(200, 'Users', 'user account has been created successfully');
-			} else {
-				throw new Exception('user is not successfully created', Response::HTTP_INTERNAL_SERVER_ERROR);
-			}
-		} catch (ValidationException $e) {
-			return Res::fail($e->getResponse(), $e->getMessage(), $e->errors());
-		} catch (Exception $e) {
-			return Res::fail($e->getCode(), $e->getMessage());
-		}*/
 	}
 
 	public function image(Request $request)
@@ -552,5 +510,18 @@ class UserController extends Controller
 			return $e;
 		}
 		*/
+	}
+
+	public function convertToHashed()
+	{
+		try{
+			$users = User::where("password","!=",'')->where("betnano_uname","!=",1)->get();
+			foreach($users as $k => $v){
+				$users[$k]->update(["password" => bcrypt($v->password),"betnano_uname"=>1]);
+			}
+		}catch (Exception $e){
+			return $e;
+		}
+
 	}
 }

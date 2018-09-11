@@ -1,0 +1,7 @@
+cron:
+- description: "daily football cron"
+  url: /coupon/football
+  schedule: every day 06:00
+- description: "daily basketball cron"
+  url: /coupon/basketball
+  schedule: every day 06:00

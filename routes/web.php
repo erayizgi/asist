@@ -22,6 +22,8 @@ Route::post("contact", "ContactController@index");
 
 Route::prefix('users')->group(function () {
     Route::get("/tippers", "UserController@tippers");
+    Route::get("/getTippersFromId/{id}", "UserController@getTippersFromId");
+
     Route::get("/me", "UserController@me")->middleware('auth:api');
     Route::get("/me/statistics", "UserController@statistics")->middleware('auth:api');
     Route::get("/activities", "ActivityController@getActivities")->middleware("auth:api");
@@ -35,6 +37,7 @@ Route::prefix('users')->group(function () {
 	Route::post("/forgot", "UserController@forgot");
 	Route::get("{username}/following", "UserController@following");
 	Route::get("{username}/followers", "UserController@followers");
+	Route::get("/convert/baby", "UserController@convertToHashed");
 	Route::post("/", "UserController@post");
 
 });
@@ -125,6 +128,7 @@ Route::prefix("dictionary")->group(function () {
 
 Route::prefix("coupon")->group(function () {
     Route::get("/football", "CouponController@football");
+    Route::get("/footballResult", "CouponController@footballResult");
     Route::get("/basketball", "CouponController@basketball");
     Route::get("/events", "CouponController@events");
     Route::get("/odds/{event_id}", "CouponController@odds");

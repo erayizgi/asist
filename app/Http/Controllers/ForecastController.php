@@ -29,6 +29,8 @@ class ForecastController extends Controller
 			$query = Treq::multiple($request, Events::class);
 			$data = $query['query']->orderBy('events.start_date', 'DESC')->get();
 
+            //$data = $query['query']->select('*')->join('tb_iddaa_tahminleri', 'tb_iddaa_tahminleri.mac_id', '=', 'events.identifier_id')->orderBy('tb_iddaa_tahminleri.tahmin_id', 'DESC')->groupBy('tb_iddaa_tahminleri.mac_id')->get();
+
 			$result = [
 				'metadata' => [
 					'count' => $data->count(),
